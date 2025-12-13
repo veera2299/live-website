@@ -1,0 +1,49 @@
+{
+  "hash": "965df54d",
+  "configHash": "e9aec89c",
+  "lockfileHash": "cf5b7cb7",
+  "browserHash": "e856e8e8",
+  "optimized": {
+    "aos": {
+      "src": "../../node_modules/aos/dist/aos.js",
+      "file": "aos.js",
+      "fileHash": "2739ce48",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "656a8a0f",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "891c41cf",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "be6fb937",
+      "needsInterop": false
+    },
+    "react-slick": {
+      "src": "../../node_modules/react-slick/lib/index.js",
+      "file": "react-slick.js",
+      "fileHash": "5e5e3168",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-DFGXCH5G": {
+      "file": "chunk-DFGXCH5G.js"
+    },
+    "chunk-ZXS2HP7S": {
+      "file": "chunk-ZXS2HP7S.js"
+    },
+    "chunk-V4OQ3NZ2": {
+      "file": "chunk-V4OQ3NZ2.js"
+    }
+  }
+}
