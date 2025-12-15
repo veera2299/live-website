@@ -6,6 +6,8 @@ const Addevent = () => {
   // State Management
   const [files, setFiles] = useState([]);
   const [eventName, setEventName] = useState('');
+  const [names, setNames] = useState('');
+  const [ytcode, setYtcode] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -36,6 +38,8 @@ const Addevent = () => {
     e.preventDefault();
     const eventData = {
       eventName,
+      names,
+      ytcode, 
       date,
       time,
       location,
@@ -107,6 +111,32 @@ const Addevent = () => {
             required
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
+            placeholder="e.g. Annual Tech Conference 2024"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+          />
+        </div>
+
+         {/* Names */}
+         <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Names</label>
+          <input
+            type="text"
+            required
+            value={names}
+            onChange={(e) => setNames(e.target.value)}
+            placeholder="e.g. Annual Tech Conference 2024"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+          />
+        </div>
+
+         {/* YT code */}
+         <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">YT code</label>
+          <input
+            type="text"
+            required
+            value={ytcode}
+            onChange={(e) => setYtcode(e.target.value)}
             placeholder="e.g. Annual Tech Conference 2024"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
           />

@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const adminRoutes = require('./routes/adminRoutes')
 const bodyParser = require('body-parser')
 const newEventRoutes = require("./routes/newEventRoutes")
+const path = require('path');
 
 const PORT = 4000;
 
@@ -14,6 +15,11 @@ mongoose.connect(process.env.MONGO_URI).then(()=>console.log("DB connected succe
 .catch((err)=>console.log(err)
 )
 
+
+// Add this in your main server file (server.js/index.js)
+// This makes the 'uploads' folder publicly accessible at http://localhost:5000/uploads/filename.jpg
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(bodyParser.json());
 app.use('/admin', adminRoutes);
 app.use('/events', newEventRoutes)

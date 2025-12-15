@@ -11,6 +11,16 @@ const newEventSchema = new mongoose.Schema({
     required: [true, 'Please provide an event name.'],
     trim: true, // Removes leading and trailing whitespace
   },
+  names: {
+    type: String,
+    required: [true, 'Please provide an their names.'],
+    trim: true, // Removes leading and trailing whitespace
+  },
+  ytCode: {
+    type: String,
+    required: [true, 'Please provide an youtube code.'],
+    trim: true, // Removes leading and trailing whitespace
+  },
   date: {
     type: Date,
     required: [true, 'Please select a date for the event.'],

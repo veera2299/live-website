@@ -39,7 +39,7 @@ const upload = multer({
 
 const addEvent = async (req, res) => {
     try {
-        const { eventName, date, time, location } = req.body;
+        const { eventName, names, ytCode, date, time, location } = req.body;
 
         // CHANGE 1: Use 'req.files' (plural) instead of 'req.file'
         // We map over the array to get just the filenames
@@ -54,6 +54,8 @@ const addEvent = async (req, res) => {
         // CHANGE 2: Ensure your DB saves an array
         const newEvent = new NewEvent({
             eventName, 
+            names,
+            ytCode,
             date, 
             time, 
             location, 
@@ -70,7 +72,105 @@ const addEvent = async (req, res) => {
     }
 }
 
+const getAllEvents = async (req, res) =>{
+
+    try {
+        const allEvents = await NewEvent.find();
+      res.status(200).json({allEvents})
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+    
+}
+
+const getEvent = async(req, res)=>{
+    try {
+        const eventId = req.params.eventId;
+        const event = await NewEvent.findById(eventId);
+        if(!event){
+            return res.status(404).json({error: "event not found"});
+        }
+        res.status(200).json({event});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+const deleteEvent = async(req, res)=>{
+
+    try {
+        const eventId = req.params.eventId;
+        const deletedEvent = await NewEvent.findByIdAndDelete(eventId);
+
+        if(!deletedEvent){
+            return res.status(404).json({error: "event not found"})
+        }
+        res.status(201).json({message: "event deleted successfully"})
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+
+const updateEvent = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { eventName, names, ytCode, date, time, location } = req.body;
+
+        // 1. Process New Images (if any)
+        let newImageFilenames = [];
+        if (req.files && req.files.length > 0) {
+            newImageFilenames = req.files.map(file => file.filename);
+        }
+
+        // 2. Build the Update Object
+        // We use MongoDB operators: $set for text, $push for arrays
+        const updateData = {
+            $set: {
+                eventName,
+                names,
+                ytCode,
+                date,
+                time,
+                location
+            }
+        };
+
+        // Only add the $push operator if there are actually new images
+        if (newImageFilenames.length > 0) {
+            updateData.$push = { 
+                eventImages: { $each: newImageFilenames } 
+            };
+        }
+
+        // 3. Perform the Update
+        const updatedEvent = await NewEvent.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
+        return res.status(200).json({
+            message: "Event updated successfully",
+            event: updatedEvent
+        });
+
+    } catch (error) {
+        console.error("Update Error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
 // CHANGE 3: Use 'upload.array' instead of 'upload.single'
 // 'images' is the key name you must use in Postman
 // 10 is the maximum number of files allowed at once
-module.exports = { addEvent: [upload.array('images', 10), addEvent] };
+
+module.exports = { addEvent: [upload.array('images', 10), addEvent], getAllEvents, getEvent, deleteEvent, updateEvent };
