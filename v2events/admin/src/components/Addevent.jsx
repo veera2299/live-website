@@ -111,7 +111,7 @@ const Addevent = () => {
             required
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
-            placeholder="e.g. Annual Tech Conference 2024"
+            placeholder="e.g. Marriage"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
           />
         </div>
@@ -124,7 +124,7 @@ const Addevent = () => {
             required
             value={names}
             onChange={(e) => setNames(e.target.value)}
-            placeholder="e.g. Annual Tech Conference 2024"
+            placeholder="e.g. Couple Names"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
           />
         </div>
@@ -137,7 +137,7 @@ const Addevent = () => {
             required
             value={ytcode}
             onChange={(e) => setYtcode(e.target.value)}
-            placeholder="e.g. Annual Tech Conference 2024"
+            placeholder="Enter Youtube Code"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
           />
         </div>
