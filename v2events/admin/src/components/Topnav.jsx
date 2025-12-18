@@ -27,8 +27,8 @@ const Topnav = ({ toggleSidebar, onOpenLogin, isLoggedIn }) => {
                 {/* Avatar Placeholder */}
                 <img 
                   className="h-9 w-9 rounded-full object-cover border-2 border-gray-200 group-hover:border-indigo-400 transition-all" 
-                  src="./veera2.jpg" 
-                  alt="veera img" 
+                  src="/veera2.jpg"
+                  alt="veera" 
                 />
                 <div className="hidden md:flex flex-col items-start text-sm">
                     <span className="font-semibold text-gray-700 line-clamp-1">V2 Events</span>
@@ -41,7 +41,7 @@ const Topnav = ({ toggleSidebar, onOpenLogin, isLoggedIn }) => {
             /* ------------------ USER IS NOT LOGGED IN ------------------ */
             <button 
               onClick={onOpenLogin}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
             >
               Login
             </button>

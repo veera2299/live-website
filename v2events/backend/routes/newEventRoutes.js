@@ -42,7 +42,7 @@ const upload = multer({
 
 
 router.post('/add-event', verifyToken, newEventController.addEvent);
-router.delete('/:eventId', verifyToken, newEventController.deleteEvent);
+router.delete('/all-events/:eventId', verifyToken, newEventController.deleteEvent);
 router.get('/all-events', newEventController.getAllEvents);
 router.get('/all-events/:eventId', newEventController.getEvent);
 
@@ -79,6 +79,14 @@ router.put(
     newEventController.updateEvent
 );
 
+
+// Add this route to your backend
+// It assumes you have a middleware named 'verifyToken'
+
+router.get('/verify-token', verifyToken, (req, res) => {
+    // If code reaches here, the middleware passed, so the token is valid
+    res.json({ success: true, message: "Token is valid" });
+});
 
 
 

@@ -64,7 +64,7 @@ const addEvent = async (req, res) => {
 
         await newEvent.save();
 
-        return res.status(200).json({ message: "New event added successfully" });
+        return res.status(200).json({ message: "New event added successfully", success: "true"});
 
     } catch (error) {
         console.log(error);
@@ -107,7 +107,7 @@ const deleteEvent = async(req, res)=>{
         if(!deletedEvent){
             return res.status(404).json({error: "event not found"})
         }
-        res.status(201).json({message: "event deleted successfully"})
+        res.status(201).json({message: "event deleted successfully", success: "true"})
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: "Internal server error" });
@@ -159,7 +159,8 @@ const updateEvent = async (req, res) => {
 
         return res.status(200).json({
             message: "Event updated successfully",
-            event: updatedEvent
+            event: updatedEvent,
+            success: "true"
         });
 
     } catch (error) {

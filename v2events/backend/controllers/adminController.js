@@ -39,14 +39,14 @@ const adminLogin = async(req,res)=>{
     try {
         const admin = await Admin.findOne({email});
     if(!admin){
-        return res.status(401).json({error: "email not found"})
+        return res.status(401).json({message : "email not found"})
     }else if(!(await bcrypt.compare(password, admin.password))){
-        return res.status(402).json({error: "password incorrect"})
+        return res.status(402).json({message: "password incorrect"})
     }
 
     const token = jwt.sign({adminId: admin._id}, secret_key, {expiresIn : "1d"})
 
-    res.status(200).json({message:"Login successfully", token})
+    res.status(200).json({message:"Login successfully", token, success:"true"})
     console.log(email)
 
     } catch (error) {

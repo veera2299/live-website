@@ -11,6 +11,12 @@ import {
   X 
 } from 'lucide-react';
 
+const logoutHandler = () => {
+  alert("Do you want to Logout");
+  localStorage.removeItem('token');
+  window.location.reload();
+}
+
 const Sidenav = ({ onClose }) => {
   // 2. Get the current URL location
   const location = useLocation();
@@ -48,15 +54,15 @@ const Sidenav = ({ onClose }) => {
         {/* 3. Logic: Compare location.pathname with the link's path */}
         
         {/* Dashboard */}
-        <Link to="/" className={getLinkClasses(location.pathname === '/')}>
+        <Link to="/admin" className={getLinkClasses(location.pathname === '/admin')}>
           <LayoutDashboard size={20} />
           <span>Dashboard</span>
         </Link>
         
         {/* Add New Event */}
         <Link 
-          to="/new_event" 
-          className={getLinkClasses(location.pathname === '/new_event')}
+          to="/admin/new_event" 
+          className={getLinkClasses(location.pathname === '/admin/new_event')}
         >
           <CalendarPlus size={20} />
           <span>Add new event</span>
@@ -64,8 +70,8 @@ const Sidenav = ({ onClose }) => {
 
         {/* Modify Events */}
         <Link 
-          to="/modify_events" 
-          className={getLinkClasses(location.pathname === '/modify_events')}
+          to="/admin/modify_events" 
+          className={getLinkClasses(location.pathname === '/admin/modify_events')}
         >
           <Edit size={20} />
           <span>Modify events</span>
@@ -73,8 +79,8 @@ const Sidenav = ({ onClose }) => {
 
         {/* All Events */}
         <Link 
-          to="/all_events" 
-          className={getLinkClasses(location.pathname === '/all_events')}
+          to="/admin/all_events" 
+          className={getLinkClasses(location.pathname === '/admin/all_events')}
         >
           <List size={20} />
           <span>All events</span>
@@ -85,14 +91,14 @@ const Sidenav = ({ onClose }) => {
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-4 mb-2 px-2">System</p>
         </div>
 
-         <Link to="/settings" className={getLinkClasses(location.pathname === '/settings')}>
+         <Link to="/admin/settings" className={getLinkClasses(location.pathname === '/admin/settings')}>
           <Settings size={20} />
           <span>Settings</span>
         </Link>
       </nav>
 
       <div className="p-4 border-t border-gray-800">
-        <button className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-500 transition-colors">
+        <button onClick={logoutHandler} className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-500 transition-colors">
           <LogOut size={20} />
           <span>Logout</span>
         </button>

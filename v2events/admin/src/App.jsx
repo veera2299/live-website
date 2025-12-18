@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 // Pages
 import New_event from './pages/New_event';
@@ -11,48 +12,89 @@ import Settings from './pages/Settings';
 // Components
 import Sidenav from './components/Sidenav';
 import Topnav from './components/Topnav';
-import LoginPopup from './components/LoginPopup'; // 1. IMPORT THE COMPONENT
+import LoginPopup from './components/LoginPopup';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
+
+  const navigate = useNavigate();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  // 2. STATE FOR LOGIN POPUP
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-
-  // 1. ADD AUTH STATE
-  // Check if a token exists in localStorage (simple persistence)
+  // --- NEW AUTH STATE LOGIC ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // <--- Starts as TRUE
 
-  // Check login status on initial load
-  // useEffect(() => {
-  //   const token = localStorage.getItem('token'); // Or however you store your JWT
-  //   if (token) {
-  //     setIsLoggedIn(true);
-  //   }
-  // }, []);
+  // Function to verify token with Backend
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setIsLoggedIn(false);
+        setIsLoading(false);
+        return;
+      }
 
-  // Function to handle actual login (pass this to LoginPopup later)
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-    setIsLoginOpen(false); // Close popup
-  };
+      try {
+        // CALL YOUR NEW BACKEND ROUTE
+        // Make sure the header key ('token') matches what your middleware expects
+        const response = await axios.get("http://localhost:4000/admin/verify-token", {
+            headers: { token: token } 
+        });
 
+        if (response.data.success) {
+            setIsLoggedIn(true);
+            
+        } else {
+            // Token exists but is invalid/expired
+            throw new Error("Invalid token");
+        }
+      } catch (error) {
+        // If fake or expired, clean up
+        console.log("Token verification failed");
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+      } finally {
+        setIsLoading(false); // Stop loading regardless of result
+      }
+    };
+
+    checkAuth();
+  }, []);
+  // ----------------------------
+
+  const openLogin = () => setIsLoginOpen(true);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setIsLoginOpen(false);
+    navigate('/admin');
+
+    // No need to reload, state update handles it
+  };
+
+  // 1. SHOW LOADING SCREEN WHILE CHECKING
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
-    // 1. Outer Container: Fixed height (screen), hidden overflow to prevent double scrollbars
     <div className="flex h-screen bg-gray-100 font-sans overflow-hidden relative">
       
-      {/* 3. LOGIN POPUP COMPONENT */}
-      {/* Placed here so it overlays everything (z-50 is in the popup code) */}
       <LoginPopup 
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 
-        onLoginSuccess={handleLoginSuccess} // You'll need to update LoginPopup to use this
+        onLoginSuccess={handleLoginSuccess} 
       />
 
-      {/* Sidebar - Fixed to left */}
+      {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -60,7 +102,7 @@ function App() {
          <Sidenav onClose={toggleSidebar} />
       </div>
 
-      {/* Mobile Overlay for Sidebar */}
+      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden" 
@@ -68,27 +110,45 @@ function App() {
         ></div>
       )}
 
-      {/* 2. Content Wrapper: Flex column to stack Topnav and Main */}
       <div className="flex-1 flex flex-col overflow-hidden relative w-full">
         
-        {/* Pass the login trigger to Topnav so you can add a button there */}
         <Topnav 
           toggleSidebar={toggleSidebar} 
-          onOpenLogin={() => setIsLoginOpen(true)} 
+          onOpenLogin={openLogin} 
           isLoggedIn={isLoggedIn}
         />
 
-        {/* 3. SCROLLABLE AREA */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
            <Routes>
-            <Route path='/' element={<Dashboard/>} />
-            <Route path='/new_event' element={<New_event/>} />
-            <Route path='/modify_events' element={<Modify_events/>} />
-            <Route path='/all_events' element={<Events/>} />
-            <Route path='/settings' element={<Settings/>} />
+            <Route path='/admin' element={<Dashboard/>} />
+
+            {/* PROTECTED ROUTES */}
+            <Route path='/admin/new_event' element={
+                <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
+                    <New_event/>
+                </ProtectedRoute>
+            } />
+
+            <Route path='/admin/modify_events' element={
+                <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
+                    <Modify_events/>
+                </ProtectedRoute>
+            } />
+
+            <Route path='/admin/all_events' element={
+                <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
+                    <Events/>
+                </ProtectedRoute>
+            } />
+
+            <Route path='/admin/settings' element={
+                <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
+                    <Settings/>
+                </ProtectedRoute>
+            } />
+            
            </Routes>
         </main>
-    
       </div>
     </div>
   );

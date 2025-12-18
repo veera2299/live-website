@@ -1,9 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone'; // Import the package
+import { useDropzone } from 'react-dropzone';
 import { Calendar, Clock, MapPin, Upload, X } from 'lucide-react';
+import axios from 'axios';
 
 const Addevent = () => {
-  // State Management
+
+  const url = "http://localhost:4000/admin";
+
+  // --- State Management ---
   const [files, setFiles] = useState([]);
   const [eventName, setEventName] = useState('');
   const [names, setNames] = useState('');
@@ -12,19 +16,19 @@ const Addevent = () => {
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
 
-  // 1. Handle Multiple Image Drops
+  // --- 1. Handle Multiple Image Drops ---
   const onDrop = useCallback((acceptedFiles) => {
-    // Create preview URL for images so we can show them
+    // Create preview URL for images
     const newFiles = acceptedFiles.map(file => Object.assign(file, {
       preview: URL.createObjectURL(file)
     }));
     
-    // Add new files to existing ones (allowing multiple batches)
+    // Add new files to existing list
     setFiles(prev => [...prev, ...newFiles]);
   }, []);
 
   const removeFile = (name) => {
-    setFiles(files => files.filter(file => file.name !== name));
+    setFiles(currentFiles => currentFiles.filter(file => file.name !== name));
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -33,29 +37,71 @@ const Addevent = () => {
     multiple: true // Allow multiple files
   });
 
-  // 4. Handle Submit
-  const handleSubmit = (e) => {
+  // --- 2. Handle Submit ---
+  const addEventData = async(e) => {
     e.preventDefault();
-    const eventData = {
-      eventName,
-      names,
-      ytcode, 
-      date,
-      time,
-      location,
-      images: files
-    };
-    console.log("Submitting Event Data:", eventData);
-    alert("Event Created! Check console for data.");
+
+    // 1. Get Token
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("You are not logged in!");
+        return;
+    }
+      
+    // 2. Create FormData (REQUIRED for file uploads)
+    const formData = new FormData();
+    
+    // Append text fields directly from State variables
+    formData.append("eventName", eventName);
+    formData.append("names", names);
+    formData.append("ytCode", ytcode);
+    formData.append("date", date);
+    formData.append("time", time);
+    formData.append("location", location);
+    
+    // 3. Loop through files and append them one by one
+    // "images" must match your backend: upload.array('images')
+    if (files.length > 0) {
+        files.forEach((file) => {
+            formData.append("images", file);
+        });
+    }
+
+    try {
+      const newUrl = url + "/add-event";
+      
+      const response = await axios.post(newUrl, formData, {
+        headers: { 
+            token: token,
+            // Axios automatically sets multipart/form-data content-type
+        }
+      });
+
+      if(response.data.success){
+        alert("New Event Added Successfully");
+        
+        // Reset Form
+        setEventName('');
+        setNames('');
+        setYtcode('');
+        setDate('');
+        setTime('');
+        setLocation('');
+        setFiles([]);
+      }
+    } catch (error) {
+      alert("Error Occurred during upload");
+      console.error("Add event Error:", error);
+    }
   };
 
   return (
     <div className="p-6 lg:p-10 w-full max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Create New Event</h1>
       
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:p-8">
+      <form onSubmit={addEventData} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:p-8">
         
-        {/* 1. Multiple Image Upload Section */}
+        {/* --- Image Upload Section --- */}
         <div className="mb-8">
           <label className="block text-sm font-medium text-gray-700 mb-2">Event Images</label>
           
@@ -103,6 +149,8 @@ const Addevent = () => {
           )}
         </div>
 
+        {/* --- Text Inputs --- */}
+        
         {/* Event Name */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
@@ -142,10 +190,8 @@ const Addevent = () => {
           />
         </div>
 
-        {/* 2. Date and Time (Native Inputs) */}
+        {/* Date and Time */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          
-          {/* Date Picker */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
             <div className="relative">
@@ -162,7 +208,6 @@ const Addevent = () => {
             </div>
           </div>
 
-          {/* Time Picker */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
             <div className="relative">
@@ -180,7 +225,7 @@ const Addevent = () => {
           </div>
         </div>
 
-        {/* 3. Location (Clean Input) */}
+        {/* Location */}
         <div className="mb-8">
           <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
           <div className="relative">
@@ -198,12 +243,16 @@ const Addevent = () => {
           </div>
         </div>
 
-        {/* 4. Submit Button */}
+        {/* Buttons */}
         <div className="flex items-center justify-end border-t border-gray-100 pt-6">
            <button 
              type="button" 
              className="mr-4 px-6 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-             onClick={() => alert('Cancelled')}
+             onClick={() => {
+                // Clear form on cancel
+                setEventName('');
+                setFiles([]);
+             }}
            >
              Cancel
            </button>
