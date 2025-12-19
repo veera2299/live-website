@@ -1,76 +1,140 @@
-import React, { useState } from 'react';
-import { Edit, Trash2, MapPin, Calendar, Clock, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Slider from "react-slick";
+import { Edit, Trash2, MapPin, Calendar, Clock, Search, Youtube, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+// Import css files for the slider
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import axios from 'axios';
 
 const Modify_events = () => {
-  // 1. Mock Data
-  const initialEvents = [
-    {
-      id: 1,
-      title: "Annual Tech Conference 2024",
-      date: "2024-09-15",
-      time: "09:00",
-      location: "Convention Center, New York",
-      image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: 2,
-      title: "Startup Networking Mixer",
-      date: "2024-10-02",
-      time: "18:30",
-      location: "The Hive, San Francisco",
-      image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: 3,
-      title: "Product Launch: Version 2.0",
-      date: "2024-11-20",
-      time: "14:00",
-      location: "Tech Hub, Austin",
-      image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: 4,
-      title: "Design Systems Workshop",
-      date: "2024-12-05",
-      time: "10:00",
-      location: "Remote / Zoom",
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80"
-    }
-  ];
 
-  const [events, setEvents] = useState(initialEvents);
+  const navigate = useNavigate();
+
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // 2. Handle Delete Logic
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
-      const updatedEvents = events.filter(event => event.id !== id);
-      setEvents(updatedEvents);
+  // API Config
+  const API_URL = "http://localhost:4000/admin/all-events";
+  const IMG_BASE_URL = "http://localhost:4000/admin/uploads/";
+
+  // 1. Fetch Data
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        // FIX: Access 'allEvents' from the response object
+        if (data.allEvents && Array.isArray(data.allEvents)) {
+          setEvents(data.allEvents);
+        } else {
+          setEvents([]);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        setLoading(false);
+        setEvents([]); 
+      }
+    };
+
+    fetchEvents();
+    console.log(events)
+  }, []);
+
+  // 2. Handle Delete
+  const handleDelete = async (id) => {
+    // 1. Get the token (assuming it's in localStorage)
+    const token = localStorage.getItem('token'); 
+
+    if (!token) {
+      alert("Authentication token not found. Please login.");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        // 2. API Call
+        const response = await axios.delete(`${API_URL}/${id}`, {
+          headers: {
+            token: token,
+          }
+        });
+
+        // 3. Success Feedback
+        if (response.data.success === "true" || response.data.success === true) {
+            alert(response.data.message);
+            
+            // 4. Update UI
+            const updatedEvents = events.filter(event => event._id !== id);
+            setEvents(updatedEvents);
+        }
+
+      } catch (error) {
+        console.error("Delete failed:", error);
+        // Handle specific error messages from backend if they exist
+        alert(error.response?.data?.message || "Failed to delete event. Please try again.");
+      }
     }
   };
 
-  // 3. Handle Edit Logic
+ // 3. Handle Edit
   const handleEdit = (id) => {
-    alert(`Redirect to edit page for Event ID: ${id}`);
+    navigate(`/admin/all-events/${id}`);
   };
 
-  // Filter events based on search
-  const filteredEvents = events.filter(event => 
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+  // Helper to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-GB'); // dd/mm/yyyy
+  };
+
+  // 4. Filter Logic
+  const filteredEvents = events.filter(event => {
+    const title = event.eventName || '';
+    const loc = event.location || '';
+    return title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           loc.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  // --- Carousel Configuration ---
+  const CustomPrevArrow = ({ onClick }) => (
+    <button onClick={onClick} className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 hover:bg-white text-gray-800 p-1 rounded-full shadow-lg transition-all" type="button">
+      <ChevronLeft size={20} />
+    </button>
   );
+
+  const CustomNextArrow = ({ onClick }) => (
+    <button onClick={onClick} className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 hover:bg-white text-gray-800 p-1 rounded-full shadow-lg transition-all" type="button">
+      <ChevronRight size={20} />
+    </button>
+  );
+
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: false,
+    prevArrow: <CustomPrevArrow />,
+    nextArrow: <CustomNextArrow />
+  };
 
   return (
     <div className="p-6 lg:p-10 w-full">
       
-      {/* Page Header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Modify Events</h1>
           <p className="text-gray-500 text-sm mt-1">Manage, edit, or remove existing events</p>
         </div>
         
-        {/* Local Search Bar */}
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input 
@@ -83,54 +147,90 @@ const Modify_events = () => {
         </div>
       </div>
 
-      {/* Events Grid */}
-      {filteredEvents.length > 0 ? (
+      {/* Grid */}
+      {loading ? (
+        <div className="text-center py-20 text-gray-500">Loading events...</div>
+      ) : filteredEvents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col">
+            <div key={event._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col">
               
-              {/* Event Image */}
-              <div className="relative h-48 bg-gray-200">
-                <img 
-                  src={event.image} 
-                  alt={event.title} 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-gray-700 shadow-sm">
-                  ID: {event.id}
-                </div>
+              {/* Carousel */}
+              <div className="h-52 bg-gray-100 relative group">
+                {event.eventImages && event.eventImages.length > 0 ? (
+                   <Slider {...sliderSettings}>
+                     {event.eventImages.map((imgName, index) => (
+                       <div key={index} className="h-52 outline-none">
+                         <img 
+                           src={`${IMG_BASE_URL}${imgName}`} 
+                           alt={`Slide ${index}`} 
+                           className="w-full h-full object-cover"
+                           onError={(e) => {e.target.src = "https://via.placeholder.com/400x200?text=No+Image"}}
+                         />
+                       </div>
+                     ))}
+                   </Slider>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 flex-col">
+                    <span className="text-xs">No Images</span>
+                  </div>
+                )}
               </div>
 
-              {/* Content */}
+              {/* Card Body */}
               <div className="p-5 flex-1 flex flex-col">
-                <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-1">{event.title}</h3>
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{event.eventName}</h3>
+                </div>
                 
-                <div className="space-y-2 text-sm text-gray-600 mb-6">
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{event.date}</span>
+                <div className="space-y-2.5 text-sm text-gray-600 mb-6">
+                  
+                  {/* Names - Only show if exists */}
+                  {event.names && (
+                    <div className="flex items-center text-indigo-600 font-medium">
+                        <Users className="w-4 h-4 mr-2" />
+                        <span className="truncate">{event.names}</span>
+                    </div>
+                  )}
+
+                  {/* YT Code - Only show if exists */}
+                  {event.ytCode && (
+                    <div className="flex items-center">
+                        <Youtube className="w-4 h-4 mr-2 text-red-500" />
+                        <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{event.ytCode}</span>
+                    </div>
+                  )}
+
+                  {/* Date/Time */}
+                  <div className="flex gap-4">
+                    <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                        <span>{formatDate(event.date)}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                        <span>{event.time}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{event.time}</span>
-                  </div>
+
+                  {/* Location */}
                   <div className="flex items-center">
                     <MapPin className="w-4 h-4 mr-2 text-gray-400" />
                     <span className="truncate">{event.location}</span>
                   </div>
                 </div>
 
-                {/* Actions Footer */}
+                {/* Buttons */}
                 <div className="mt-auto pt-4 border-t border-gray-100 flex gap-3">
                   <button 
-                    onClick={() => handleEdit(event.id)}
+                    onClick={() => handleEdit(event._id)}
                     className="flex-1 flex items-center justify-center py-2 px-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium"
                   >
                     <Edit className="w-4 h-4 mr-2" />
-                    Edit
+                    Modify
                   </button>
                   <button 
-                    onClick={() => handleDelete(event.id)}
+                    onClick={() => handleDelete(event._id)}
                     className="flex-1 flex items-center justify-center py-2 px-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />

@@ -14,6 +14,7 @@ import Sidenav from './components/Sidenav';
 import Topnav from './components/Topnav';
 import LoginPopup from './components/LoginPopup';
 import ProtectedRoute from './components/ProtectedRoute';
+import Addevent from './components/Addevent';
 
 function App() {
 
@@ -144,6 +145,12 @@ function App() {
             <Route path='/admin/settings' element={
                 <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
                     <Settings/>
+                </ProtectedRoute>
+            } />
+
+            <Route path='/admin/all-events/:eventId' element={
+                <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
+                    <Addevent />
                 </ProtectedRoute>
             } />
             

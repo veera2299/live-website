@@ -2,6 +2,7 @@ const NewEvent = require("../models/NewEvent") // Ensure this path matches your 
 const Admin = require("../models/Admin")
 const multer = require("multer")
 const path = require('path');
+const fs = require('fs');
 
 // --- Multer Storage Configuration ---
 const storage = multer.diskStorage({
@@ -102,17 +103,40 @@ const deleteEvent = async(req, res)=>{
 
     try {
         const eventId = req.params.eventId;
-        const deletedEvent = await NewEvent.findByIdAndDelete(eventId);
-
-        if(!deletedEvent){
-            return res.status(404).json({error: "event not found"})
+        const event = await NewEvent.findById(eventId);
+        if (!event) {
+            return res.json({ success: false, message: "Event not found" });
         }
-        res.status(201).json({message: "event deleted successfully", success: "true"})
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: "Internal server error" });
+        
+       // 2. Delete images from the 'uploads' folder
+       if (event.eventImages && event.eventImages.length > 0) {
+        event.eventImages.forEach((imageName) => {
+            // Construct the full path to the file
+            // Adjust 'uploads' if your folder is nested differently (e.g., 'public/uploads')
+            const filePath = path.join(__dirname, '../uploads', imageName); 
+
+            // Check if file exists, then delete it
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error(`Failed to delete image: ${imageName}`, err);
+                    // We continue even if one image fails to delete
+                } else {
+                    console.log(`Successfully deleted: ${imageName}`);
+                }
+            });
+        });
     }
+
+    // 3. Delete the event from the Database
+    await NewEvent.findByIdAndDelete(eventId);
+
+    res.json({ success: true, message: "Event and associated images deleted successfully" });
+
+} catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error deleting event" });
 }
+};
 
 
 const updateEvent = async (req, res) => {

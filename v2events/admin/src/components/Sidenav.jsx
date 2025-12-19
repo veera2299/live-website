@@ -12,9 +12,10 @@ import {
 } from 'lucide-react';
 
 const logoutHandler = () => {
-  alert("Do you want to Logout");
+ if(window.confirm("Do you want to logout?")){
   localStorage.removeItem('token');
   window.location.reload();
+ }
 }
 
 const Sidenav = ({ onClose }) => {
