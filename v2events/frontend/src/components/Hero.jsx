@@ -12,11 +12,11 @@ const HeroData = [
 
 const settings = {
     dots: true,
-    arrows: false,
+    arrows: true,
     infinite: true,
     speed: 800,
     slidesToScroll: 1,
-    autoplay: false,
+    autoplay: true,
     autoplaySpeed: 3000,
     cssEase: "ease-in-out",
     pauseOnHover: false,
