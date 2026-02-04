@@ -1,14 +1,20 @@
-import React from 'react'
-import Navbar from '../components/Navbar'
-import Card from '../components/Card'
-import Footer from '../components/Footer'
+import React from 'react';
+import { useEvent } from '../contextApi/EventContext';
+import EventList from '../components/EventList'; // Import the reusable component
 
 const Upcoming = () => {
-  return (
-    <div>
-      <Card/>
-    </div>
-  )
-}
+  // 1. Get the bucketed data from your Context
+  const { upcomingEvents, loading } = useEvent();
 
-export default Upcoming
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <EventList 
+        title="Upcoming Live Streams Schedule" 
+        events={upcomingEvents} 
+        isCompleted={false} // <--- Shows Timer
+    />
+  );
+};
+
+export default Upcoming;

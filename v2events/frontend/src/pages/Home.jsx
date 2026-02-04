@@ -1,16 +1,21 @@
 import React from 'react'
-import Navbar from '../components/Navbar'
-import Hero from '../components/Hero'
 import Play from '../components/Play'
-import Footer from '../components/Footer'
 import CircularRotatingShowcase from '../components/CircularRotatingShowcase'
+import Timeline from '../components/Timeline'
+import Guestbook from '../components/Guestbook'
+import {HeartSeparator, DiamondSeparator,} from '../components/Separator'
 
 const Home = () => {
+
   return (
     <div>
-      <Hero/>
-      <Play/>
       <CircularRotatingShowcase/>
+      <HeartSeparator />
+      <Play/>
+      <DiamondSeparator/>
+      <Timeline />
+      <HeartSeparator />
+      <Guestbook />
     </div>
   )
 }

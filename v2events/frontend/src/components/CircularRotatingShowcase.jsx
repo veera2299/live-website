@@ -1,90 +1,195 @@
-import React from 'react';
-
-// Sample data for the slider
-const images = [
-  "https://images.unsplash.com/photo-1599552683573-9dc48255b7ef?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1577493340887-b7bfff550145?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1560167016-092131bad975?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1560419015-7c427e8ae5ba?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1549488497-15216d56673d?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1516216628859-9bcce593dd4e?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1552084117-5635e80c9e46?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1500531279542-fc8490c8ea4d?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1596727147705-56a9684e6191?q=80&w=600&auto=format&fit=crop",
-];
+import React, { useState, useEffect } from 'react';
+import { useEvent } from '../contextApi/EventContext';
 
 const CircularRotatingShowcase = () => {
-  return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#D2D2D2]">
-      <style>{`
-        /* Importing beautiful fonts: Great Vibes (Script) and Playfair Display (Serif) */
-        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+  const { homeEvent, loading } = useEvent();
+  
+  // 1. State for Time & Live Status
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isLive, setIsLive] = useState(false);
 
-        /* 3D Rotation Animation */
+  // 2. Timer Logic 
+  useEffect(() => {
+    // Default to current date if no data to prevent crash
+    const targetDateStr = homeEvent?.date || new Date().toISOString();
+    const targetDate = new Date(targetDateStr);
+
+    const calculateTimeLeft = () => {
+      const difference = +targetDate - +new Date();
+      
+      if (difference > 0) {
+        setIsLive(false); // Event hasn't started
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      } else {
+        setIsLive(true); // Event is Live
+        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      }
+    };
+
+    // Initial calculation
+    setTimeLeft(calculateTimeLeft());
+
+    // Update every second
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [homeEvent]);
+
+  const formatTime = (time) => (time < 10 ? `0${time}` : time);
+
+  // Loading State
+  if (loading) return <div className="h-screen flex items-center justify-center text-white bg-gray-900">Loading...</div>;
+
+  // Image Logic
+  const IMAGE_BASE_URL = "http://localhost:4000/uploads/"; 
+  const displayImages = (homeEvent?.eventImages?.length > 0)
+    ? homeEvent.eventImages.map(img => `${IMAGE_BASE_URL}${img}`)
+    : ["https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"]; 
+
+  // Dynamic Color Logic (Default to white)
+  const textColor = homeEvent?.textColor || 'white'; 
+
+  return (
+    <div className="relative overflow-hidden bg-[#D2D2D2] rounded-xl m-4 md:m-8 h-[calc(100vh-1.5rem)] md:h-[calc(100vh-3rem)]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+        
         @keyframes autoRun {
             from { transform: perspective(1000px) rotateX(-10deg) rotateY(0deg); }
             to { transform: perspective(1000px) rotateX(-10deg) rotateY(360deg); }
         }
+        .animate-autoRun { animation: autoRun 20s linear infinite; }
+        
+        /* Pulse Animation for Live Button */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); transform: scale(1.05); }
+        }
+        .animate-pulse-glow { animation: pulse-glow 2s infinite; }
 
-        .animate-autoRun {
-            animation: autoRun 20s linear infinite;
-        }
-
-        /* Responsive Z-Distance logic */
-        :root {
-            --z-distance: 550px;
-        }
-        @media (max-width: 1023px) {
-            :root { --z-distance: 350px; }
-        }
-        @media (max-width: 767px) {
-            :root { --z-distance: 220px; }
-        }
-        @media (max-width: 480px) {
-            :root { --z-distance: 160px; }
-        }
+        :root { --z-distance: 550px; }
+        @media (max-width: 1023px) { :root { --z-distance: 350px; } }
+        @media (max-width: 767px) { :root { --z-distance: 220px; } }
+        @media (max-width: 480px) { :root { --z-distance: 160px; } }
       `}</style>
 
       {/* 1. BACKGROUND IMAGE */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center z-0 pointer-events-none"
-        style={{ backgroundImage: 'url("/marriage.png")' }} 
+        className="absolute inset-0 w-full h-full bg-cover bg-center z-0 pointer-events-none transition-all duration-1000"
+        style={{ backgroundImage: `url("${displayImages[0]}")` }} 
       >
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-black/50 bg-gradient-to-b from-black/30 via-black/40 to-black/70 backdrop-blur-[2px]"></div>
       </div>
 
-      {/* 2. CENTERED TEXT "V2 EVENTS" 
-          - Changed Font to 'Great Vibes'
-          - Added py-24 for vertical margin
-      */}
+      {/* 2. TIMER / LIVE SECTION (Maintained exact position) */}
+      <div className="absolute top-0 left-0 w-full z-30 flex flex-col items-center pt-8 md:pt-10" style={{ color: textColor }}>
+        
+        {!isLive ? (
+            // --- OPTION A: SHOW TIMER (Standard Layout) ---
+            <>
+                <h2 className="font-['Playfair_Display'] text-sm md:text-xl uppercase tracking-[0.3em] mb-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                Live Begins In
+                </h2>
+                
+                <div className="flex gap-4 md:gap-8 text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    {/* Days */}
+                    <div className="flex flex-col items-center">
+                        <span className="text-2xl md:text-4xl font-['Playfair_Display'] font-bold">
+                            {formatTime(timeLeft.days)}
+                        </span>
+                        <span className="text-[10px] md:text-xs opacity-80 uppercase tracking-widest mt-1">Days</span>
+                    </div>
+                    
+                    <span className="text-xl md:text-3xl opacity-70 font-serif mt-1">:</span>
+
+                    {/* Hours */}
+                    <div className="flex flex-col items-center">
+                        <span className="text-2xl md:text-4xl font-['Playfair_Display'] font-bold">
+                            {formatTime(timeLeft.hours)}
+                        </span>
+                        <span className="text-[10px] md:text-xs opacity-80 uppercase tracking-widest mt-1">Hours</span>
+                    </div>
+
+                    <span className="text-xl md:text-3xl opacity-70 font-serif mt-1">:</span>
+
+                    {/* Minutes */}
+                    <div className="flex flex-col items-center">
+                        <span className="text-2xl md:text-4xl font-['Playfair_Display'] font-bold">
+                            {formatTime(timeLeft.minutes)}
+                        </span>
+                        <span className="text-[10px] md:text-xs opacity-80 uppercase tracking-widest mt-1">Mins</span>
+                    </div>
+
+                    <span className="text-xl md:text-3xl opacity-70 font-serif mt-1">:</span>
+
+                    {/* Seconds */}
+                    <div className="flex flex-col items-center">
+                        <span className="text-2xl md:text-4xl font-['Playfair_Display'] font-bold w-[40px] md:w-[60px]">
+                            {formatTime(timeLeft.seconds)}
+                        </span>
+                        <span className="text-[10px] md:text-xs opacity-80 uppercase tracking-widest mt-1">Sec</span>
+                    </div>
+                </div>
+            </>
+        ) : (
+            // --- OPTION B: SHOW LIVE BUTTON (Replaces Timer) ---
+            // Uses padding to match the height of the timer so layout doesn't jump
+            <div className="py-2 flex flex-col items-center justify-center animate-fade-in">
+            <button 
+               onClick={() => {
+                   document.getElementById('live-player')?.scrollIntoView({ behavior: 'smooth' });
+               }}
+               // Removed all background/border classes. Added hover scale.
+               className="group flex items-center gap-4 transition-transform duration-500 hover:scale-105"
+            >
+               {/* The Pulsing Red Dot */}
+               <span className="relative flex h-3 w-3">
+                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_15px_#ef4444]"></span>
+               </span>
+
+               {/* The Text */}
+               <span className="text-white font-['Playfair_Display'] text-2xl md:text-4xl tracking-[0.2em] uppercase font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                   Watch Live
+               </span>
+            </button>
+       </div>
+        )}
+      </div>
+
+      {/* 3. CENTERED TEXT (Layout Unchanged) */}
       <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none py-24">
-        <div className="relative text-center">
-            <h1 className="font-['Great_Vibes'] text-[15vw] lg:text-[10vw] leading-none text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] tracking-wide">
+        <div className="relative text-center mt-20 md:mt-0" style={{ color: textColor }}> 
+            <h1 className="font-['Great_Vibes'] text-[15vw] lg:text-[10vw] leading-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] tracking-wide">
                 V2 Events
             </h1>
-            {/* Optional subtitle in a clean Serif font */}
-            <p className="font-['Playfair_Display'] text-white/80 text-lg md:text-2xl mt-4 tracking-[0.2em] uppercase">
+            <p className="font-['Playfair_Display'] opacity-90 text-lg md:text-2xl mt-4 tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 Making Memories
             </p>
         </div>
       </div>
 
-      {/* 3. 3D SLIDER SECTION */}
+      {/* 4. 3D SLIDER SECTION (Layout Unchanged) */}
       <div 
-        className="absolute top-[40%] md:top-[35%] lg:top-[30%]
+        className="absolute top-[45%] md:top-[35%] lg:top-[30%]
                    left-1/2 -translate-x-1/2
                    w-[100px] md:w-[140px] lg:w-[200px] 
                    h-[140px] md:h-[180px] lg:h-[250px] 
                    z-20 [transform-style:preserve-3d] animate-autoRun pointer-events-none"
       >
-        {images.map((src, index) => (
+        {displayImages.map((src, index) => (
           <div
             key={index}
             className="absolute inset-0 [transform-style:preserve-3d]"
             style={{
-              transform: `rotateY(${index * (360 / images.length)}deg) translateZ(var(--z-distance))`
+              transform: `rotateY(${index * (360 / displayImages.length)}deg) translateZ(var(--z-distance))`
             }}
           >
             <img 

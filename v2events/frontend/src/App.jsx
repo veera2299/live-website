@@ -10,6 +10,7 @@ import Completed from './pages/Completed';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Routes, Route } from 'react-router-dom';
+import {SimpleSeparator} from './components/Separator'
 
 const App = () => {
 
@@ -31,6 +32,7 @@ const App = () => {
       <Route path='/upcoming' element={<Upcoming/>} />
       <Route path='/completed' element={<Completed/>} />
       </Routes>
+      <SimpleSeparator/>
       <Footer/>
     </div>
   )

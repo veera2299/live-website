@@ -31,9 +31,16 @@ const newEventSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    required: [true, 'Please provide the event location.'],
+    required: [false, 'Please provide the event location.'],
     trim: true,
   },
+  timeline: [
+    {
+        time: { type: String },       // e.g., "10:00 AM"
+        title: { type: String },      // e.g., "Ceremony"
+        description: { type: String } // e.g., "Exchange of vows"
+    }
+]
 }, {
   timestamps: true, // Automatically creates 'createdAt' and 'updatedAt' fields
 });

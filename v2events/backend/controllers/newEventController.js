@@ -40,11 +40,23 @@ const upload = multer({
 
 const addEvent = async (req, res) => {
     try {
-        const { eventName, names, ytCode, date, time, location } = req.body;
+        const { eventName, names, ytCode, date, time, location, timeline } = req.body;
 
         // CHANGE 1: Use 'req.files' (plural) instead of 'req.file'
         // We map over the array to get just the filenames
         const eventImages = req.files ? req.files.map(file => file.filename) : [];
+
+        // If data comes as FormData, 'timeline' is a string like '[{"time":"..."}]'
+        // We need to parse it back to JSON.
+        let formattedTimeline = [];
+        if (timeline) {
+            try {
+                // Check if it's already an object (JSON request) or string (FormData)
+                formattedTimeline = typeof timeline === 'string' ? JSON.parse(timeline) : timeline;
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid timeline format" });
+            }
+        }
 
         const admin = await Admin.findById(req.adminId);
 
@@ -60,7 +72,8 @@ const addEvent = async (req, res) => {
             date, 
             time, 
             location, 
-            eventImages // This is now an array like ['img1.jpg', 'img2.jpg']
+            eventImages, // This is now an array like ['img1.jpg', 'img2.jpg']
+            timeline: formattedTimeline // Save the parsed array
         });
 
         await newEvent.save();
