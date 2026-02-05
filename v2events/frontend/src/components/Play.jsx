@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Play = () => {
-  // 1. State to track if the video is playing
+// 1. Accept ytCode as a prop from EventLayout
+const Play = ({ ytCode }) => {
+  // 2. State to track if the video is playing
   const [isPlaying, setIsPlaying] = useState(false);
 
-//   https://www.youtube.com/live/nslH8rxDJcI?si=upXR7aIXu89036f1
+  // 3. Reset state when the video ID changes (e.g., navigating to a different event)
+  useEffect(() => {
+    setIsPlaying(false);
+  }, [ytCode]);
 
-  // 2. Put your YouTube Video ID here (e.g., live stream ID)
-  const videoId = "nslH8rxDJcI"; 
+  // 4. Safety Check: If no YouTube code exists, hide this entire section
+  if (!ytCode) return null; 
+
+  const videoId = ytCode; 
 
   const handlePlay = () => {
     setIsPlaying(true);

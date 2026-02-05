@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useEvent } from '../contextApi/EventContext';
 
-const CircularRotatingShowcase = () => {
-  const { homeEvent, loading } = useEvent();
+// 1. Update component to accept props
+const CircularRotatingShowcase = ({ eventData: propEventData }) => {
+  const { homeEvent, loading: contextLoading } = useEvent();
+
+  // 2. Determine which data to use (Prop takes priority over Context)
+  const eventData = propEventData || homeEvent;
   
-  // 1. State for Time & Live Status
+  // 3. Handle Loading: If context is loading OR if we have no data yet
+  const isLoading = contextLoading || !eventData;
+
+  // 4. State for Timer & Live Status
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isLive, setIsLive] = useState(false);
 
-  // 2. Timer Logic 
+  // 5. Timer Logic 
   useEffect(() => {
-    // Default to current date if no data to prevent crash
-    const targetDateStr = homeEvent?.date || new Date().toISOString();
-    const targetDate = new Date(targetDateStr);
+    // Safety check: if no data, stop here
+    if (!eventData?.date) return;
+
+    const targetDate = new Date(eventData.date);
 
     const calculateTimeLeft = () => {
       const difference = +targetDate - +new Date();
@@ -40,24 +48,24 @@ const CircularRotatingShowcase = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [homeEvent]);
+  }, [eventData]); // Re-run if eventData changes
 
   const formatTime = (time) => (time < 10 ? `0${time}` : time);
 
   // Loading State
-  if (loading) return <div className="h-screen flex items-center justify-center text-white bg-gray-900">Loading...</div>;
+  if (isLoading) return <div className="h-screen flex items-center justify-center text-white bg-[#1e1b4b]">Loading Visuals...</div>;
 
   // Image Logic
-  const IMAGE_BASE_URL = "http://localhost:4000/uploads/"; 
-  const displayImages = (homeEvent?.eventImages?.length > 0)
-    ? homeEvent.eventImages.map(img => `${IMAGE_BASE_URL}${img}`)
+  const IMAGE_BASE_URL = "http://localhost:4000/admin/uploads/"; // Ensure this path matches your backend
+  const displayImages = (eventData.eventImages && eventData.eventImages.length > 0)
+    ? eventData.eventImages.map(img => `${IMAGE_BASE_URL}${img}`)
     : ["https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"]; 
 
   // Dynamic Color Logic (Default to white)
-  const textColor = homeEvent?.textColor || 'white'; 
+  const textColor = eventData.textColor || 'white'; 
 
   return (
-    <div className="relative overflow-hidden bg-[#D2D2D2] rounded-xl m-4 md:m-8 h-[calc(100vh-1.5rem)] md:h-[calc(100vh-3rem)]">
+    <div className="relative overflow-hidden bg-[#D2D2D2] rounded-2xl m-4 md:m-8 h-[calc(100vh-1.5rem)] md:h-[calc(100vh-3rem)]">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
         
@@ -88,11 +96,11 @@ const CircularRotatingShowcase = () => {
         <div className="absolute inset-0 bg-black/50 bg-gradient-to-b from-black/30 via-black/40 to-black/70 backdrop-blur-[2px]"></div>
       </div>
 
-      {/* 2. TIMER / LIVE SECTION (Maintained exact position) */}
+      {/* 2. TIMER / LIVE SECTION */}
       <div className="absolute top-0 left-0 w-full z-30 flex flex-col items-center pt-8 md:pt-10" style={{ color: textColor }}>
         
         {!isLive ? (
-            // --- OPTION A: SHOW TIMER (Standard Layout) ---
+            // --- OPTION A: SHOW TIMER ---
             <>
                 <h2 className="font-['Playfair_Display'] text-sm md:text-xl uppercase tracking-[0.3em] mb-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 Live Begins In
@@ -139,44 +147,44 @@ const CircularRotatingShowcase = () => {
                 </div>
             </>
         ) : (
-            // --- OPTION B: SHOW LIVE BUTTON (Replaces Timer) ---
-            // Uses padding to match the height of the timer so layout doesn't jump
+            // --- OPTION B: SHOW LIVE BUTTON ---
             <div className="py-2 flex flex-col items-center justify-center animate-fade-in">
-            <button 
-               onClick={() => {
-                   document.getElementById('live-player')?.scrollIntoView({ behavior: 'smooth' });
-               }}
-               // Removed all background/border classes. Added hover scale.
-               className="group flex items-center gap-4 transition-transform duration-500 hover:scale-105"
-            >
-               {/* The Pulsing Red Dot */}
-               <span className="relative flex h-3 w-3">
-                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_15px_#ef4444]"></span>
-               </span>
+                 <button 
+                    onClick={() => {
+                        document.getElementById('live-player')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="group flex items-center gap-4 transition-transform duration-500 hover:scale-105"
+                 >
+                    {/* The Pulsing Red Dot */}
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600 shadow-[0_0_15px_#ef4444]"></span>
+                    </span>
 
-               {/* The Text */}
-               <span className="text-white font-['Playfair_Display'] text-2xl md:text-4xl tracking-[0.2em] uppercase font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                   Watch Live
-               </span>
-            </button>
-       </div>
+                    {/* The Text */}
+                    <span className="text-white font-['Playfair_Display'] text-2xl md:text-4xl tracking-[0.2em] uppercase font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                        Watch Live
+                    </span>
+                 </button>
+            </div>
         )}
       </div>
 
-      {/* 3. CENTERED TEXT (Layout Unchanged) */}
+      {/* 3. CENTERED TEXT (DYNAMIC) */}
       <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none py-24">
         <div className="relative text-center mt-20 md:mt-0" style={{ color: textColor }}> 
+            {/* Display Actual Event Names */}
             <h1 className="font-['Great_Vibes'] text-[15vw] lg:text-[10vw] leading-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] tracking-wide">
-                V2 Events
+                {eventData.names || "V2 Events"}
             </h1>
+            {/* Display Actual Event Type */}
             <p className="font-['Playfair_Display'] opacity-90 text-lg md:text-2xl mt-4 tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                Making Memories
+                {eventData.eventName || "Making Memories"}
             </p>
         </div>
       </div>
 
-      {/* 4. 3D SLIDER SECTION (Layout Unchanged) */}
+      {/* 4. 3D SLIDER SECTION */}
       <div 
         className="absolute top-[45%] md:top-[35%] lg:top-[30%]
                    left-1/2 -translate-x-1/2

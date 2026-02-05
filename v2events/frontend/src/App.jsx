@@ -9,6 +9,7 @@ import Upcoming from './pages/Upcoming';
 import Completed from './pages/Completed';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import EventDetails from './pages/EventDetails';
 import { Routes, Route } from 'react-router-dom';
 import {SimpleSeparator} from './components/Separator'
 
@@ -31,6 +32,7 @@ const App = () => {
       <Route path='/' element={<Home/>} />
       <Route path='/upcoming' element={<Upcoming/>} />
       <Route path='/completed' element={<Completed/>} />
+      <Route path="/event/:id" element={<EventDetails />} />
       </Routes>
       <SimpleSeparator/>
       <Footer/>

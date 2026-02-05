@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon run dev",
-    "start": "node index"
-  },
+    "dev": "nodemon index.js --ignore uploads/",
+    "start": "node index.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

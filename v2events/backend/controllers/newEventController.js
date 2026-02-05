@@ -155,17 +155,50 @@ const deleteEvent = async(req, res)=>{
 const updateEvent = async (req, res) => {
     try {
         const { id } = req.params;
-        const { eventName, names, ytCode, date, time, location } = req.body;
+        // Destructure text fields. Note: 'timeline' and 'imagesToDelete' come as strings in FormData
+        let { eventName, names, ytCode, date, time, location, timeline, imagesToDelete } = req.body;
 
-        // 1. Process New Images (if any)
+        // --- 1. PARSE COMPLEX DATA (FormData sends arrays/objects as Strings) ---
+        
+        // Parse Timeline
+        let formattedTimeline = undefined;
+        if (timeline) {
+            try {
+                formattedTimeline = typeof timeline === 'string' ? JSON.parse(timeline) : timeline;
+            } catch (e) {
+                return res.status(400).json({ message: "Invalid timeline format" });
+            }
+        }
+
+        // Parse Images To Delete (Should be an array of filenames)
+        let imagesToRemove = [];
+        if (imagesToDelete) {
+            try {
+                imagesToRemove = typeof imagesToDelete === 'string' ? JSON.parse(imagesToDelete) : imagesToDelete;
+            } catch (e) {
+                return res.status(400).json({ message: "Invalid imagesToDelete format" });
+            }
+        }
+
+        // --- 2. HANDLE FILE SYSTEM DELETION ---
+        // If there are images to remove, delete them from the 'uploads' folder
+        if (imagesToRemove.length > 0) {
+            imagesToRemove.forEach(filename => {
+                const filePath = path.join(__dirname, '../uploads', filename); // Adjust '../uploads' to your actual folder path
+                fs.unlink(filePath, (err) => {
+                    if (err && err.code !== 'ENOENT') console.error(`Failed to delete file: ${filename}`, err);
+                });
+            });
+        }
+
+        // --- 3. PROCESS NEW IMAGES ---
         let newImageFilenames = [];
         if (req.files && req.files.length > 0) {
             newImageFilenames = req.files.map(file => file.filename);
         }
 
-        // 2. Build the Update Object
-        // We use MongoDB operators: $set for text, $push for arrays
-        const updateData = {
+        // --- 4. BUILD MONGO UPDATE QUERY ---
+        const updateQuery = {
             $set: {
                 eventName,
                 names,
@@ -176,18 +209,26 @@ const updateEvent = async (req, res) => {
             }
         };
 
-        // Only add the $push operator if there are actually new images
-        if (newImageFilenames.length > 0) {
-            updateData.$push = { 
-                eventImages: { $each: newImageFilenames } 
-            };
+        // Only update timeline if it was sent
+        if (formattedTimeline) {
+            updateQuery.$set.timeline = formattedTimeline;
         }
 
-        // 3. Perform the Update
+        // Logic A: Remove images ($pull)
+        if (imagesToRemove.length > 0) {
+            updateQuery.$pull = { eventImages: { $in: imagesToRemove } };
+        }
+
+        // Logic B: Add images ($push)
+        if (newImageFilenames.length > 0) {
+            updateQuery.$push = { eventImages: { $each: newImageFilenames } };
+        }
+
+        // --- 5. EXECUTE UPDATE ---
         const updatedEvent = await NewEvent.findByIdAndUpdate(
             id,
-            updateData,
-            { new: true } // Return the updated document
+            updateQuery,
+            { new: true } // Return updated doc
         );
 
         if (!updatedEvent) {
@@ -211,4 +252,4 @@ const updateEvent = async (req, res) => {
 // 'images' is the key name you must use in Postman
 // 10 is the maximum number of files allowed at once
 
-module.exports = { addEvent: [upload.array('images', 10), addEvent], getAllEvents, getEvent, deleteEvent, updateEvent };
+module.exports = { addEvent: [upload.array('images', 10), addEvent], getAllEvents, getEvent, deleteEvent, updateEvent: [upload.array('images', 10), updateEvent] };

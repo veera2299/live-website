@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // Ensure you have this if using Link, otherwise use button as before
 
 // 1. Accept props: title, events data, and the 'isCompleted' flag
 const EventList = ({ title, events, isCompleted }) => {
@@ -56,12 +57,17 @@ const EventList = ({ title, events, isCompleted }) => {
                     {event.eventName} {/* Using eventName as location/type */}
                     </p>
 
-                    {/* Button */}
-                    <button className="w-full bg-[#7D6B58] hover:bg-[#685949] text-white text-sm py-3 px-6 rounded-md transition-colors uppercase tracking-wide mb-6 mt-4">
-                    View Details
-                    </button>
+                    {/* Button - Using Link with Scroll to Top */}
+                    <Link 
+                        to={`/event/${event._id}`}
+                        // ADD THIS LINE BELOW:
+                        onClick={() => window.scrollTo(0, 0)}
+                        className="w-full bg-[#7D6B58] hover:bg-[#685949] text-center text-white text-sm py-3 px-6 rounded-md transition-colors uppercase tracking-wide mb-6 mt-4"
+                    >
+                        View Details
+                    </Link>
 
-                    {/* --- LOGIC: TIMER VS COMPLETED --- */}
+                    {/* --- LOGIC: TIMER VS STAY TUNED --- */}
                     <div className="w-full text-center pt-2 border-t border-gray-100">
                         {isCompleted ? (
                             // OPTION A: Show Completed Text
@@ -71,16 +77,15 @@ const EventList = ({ title, events, isCompleted }) => {
                                 </span>
                             </div>
                         ) : (
-                            // OPTION B: Show Timer (Static or Dynamic)
-                            <>
-                                <div className="text-gray-900 font-medium text-lg tracking-widest">
-                                    {/* You can add a mini countdown component here later */}
-                                    00 : 00 : 00
-                                </div>
-                                <div className="text-gray-400 text-[10px] uppercase tracking-wider">
-                                    Days • Hours • Mins
-                                </div>
-                            </>
+                            // OPTION B: Show "Stay Tuned" (Replaces Timer)
+                            <div className="py-2 flex flex-col items-center justify-center gap-1">
+                                <span className="text-[#7D6B58] font-serif italic text-xl tracking-wide">
+                                    Coming Soon...
+                                </span>
+                                <span className="text-gray-400 text-[10px] uppercase tracking-widest">
+                                    Stay Tuned
+                                </span>
+                            </div>
                         )}
                     </div>
 

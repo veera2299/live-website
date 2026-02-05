@@ -1,33 +1,39 @@
 import React from 'react';
 
-const events = [
-  { time: "10:00 AM", title: "Welcome & Intro", description: "Stream starts with a montage." },
-  { time: "10:30 AM", title: "The Ceremony", description: "Exchange of vows and rings." },
-  { time: "11:30 AM", title: "Virtual Toast", description: "కేంద్ర ప్రభుత్వం అమలు చేస్తున్న సుకన్య సమృద్ధి యోజన విజయవంతంగా 11ఏళ్లు పూర్తి చేసుకుంది. ఆడపిల్లల ఉన్నత చదువులు, పెళ్లి ఖర్చుల కోసం అందిస్తున్న ఈ పథకం ఇప్పుడు ఇన్వెస్టర్లకు కూడా మంచి రాబడినిస్తోంది. " },
-  { time: "12:00 PM", title: "Couple's First Dance", description: "Live performance." },
-];
+// 1. Accept timeline as a prop
+const Timeline = ({ timeline }) => {
 
-const Timeline = () => {
+  // 2. Safety Check: If no timeline data, don't render anything
+  if (!timeline || timeline.length === 0) {
+    return null;
+  }
+
   return (
-    // ADDED: Dark background colors (bg-[#1e1b4b]) to make white text visible
-    <div className="relative w-full py-16 bg-[#1e1b4b] overflow-hidden text-white/90 font-['Playfair_Display']">
+    // UPDATED CLASSNAME BELOW:
+    // 1. Removed 'w-full' (to prevent scrollbars with margins)
+    // 2. Added 'm-4 md:m-8' (Responsive Spacing like Showcase)
+    // 3. Added 'rounded-2xl' (Rounded corners like Showcase)
+    <div className="relative py-16 bg-[#1e1b4b] overflow-hidden text-white/90 font-['Playfair_Display'] m-4 md:m-8 rounded-2xl">
       
-      {/* Background Decor: Pink/Purple Blobs to match theme */}
+      {/* Background Decor */}
       <div className="absolute top-10 left-0 w-72 h-72 bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse"></div>
       <div className="absolute bottom-10 right-0 w-72 h-72 bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse"></div>
 
       <div className="container mx-auto px-4 max-w-4xl relative z-10">
         
         {/* Section Title */}
-        <h2 className="text-3xl md:text-5xl text-center mb-16 tracking-widest uppercase drop-shadow-lg text-white">
-          Order of Events
-        </h2>
+        <div className="text-center mb-16 relative">
+             <h2 className="text-3xl md:text-5xl tracking-widest uppercase drop-shadow-lg text-white inline-block">
+               Order of Events
+             </h2>
+             <div className="w-24 h-1 bg-pink-500 mx-auto mt-4 rounded-full"></div>
+        </div>
 
         <div className="relative">
           {/* Vertical Center Line */}
           <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-transparent via-pink-400/50 to-transparent"></div>
 
-          {events.map((event, index) => (
+          {timeline.map((event, index) => (
             <div key={index} className={`relative flex items-center mb-12 md:mb-24 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
               
               {/* Spacer for Desktop Alignment */}
@@ -48,9 +54,11 @@ const Timeline = () => {
                     {event.title}
                   </h3>
                   {/* Description */}
-                  <p className="text-sm md:text-base font-sans text-gray-300 leading-relaxed">
-                    {event.description}
-                  </p>
+                  {event.description && (
+                      <p className="text-sm md:text-base font-sans text-gray-300 leading-relaxed">
+                        {event.description}
+                      </p>
+                  )}
                 </div>
               </div>
               

@@ -38,7 +38,7 @@ const Guestbook = () => {
   };
 
   return (
-    <div className="w-full py-16 bg-gradient-to-b from-gray-900 to-gray-800 text-white font-sans">
+    <div className="py-16 bg-gradient-to-b from-gray-900 to-gray-800 text-white font-sans m-4 md:m-8 rounded-2xl overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl">
         
         {/* Header */}
