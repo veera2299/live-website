@@ -24,8 +24,12 @@ mongoose.connect(process.env.MONGO_URI).then(()=>console.log("DB connected succe
 // This makes the 'uploads' folder publicly accessible at http://localhost:5000/uploads/filename.jpg
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/admin', adminRoutes);
+app.use('/admin', newEventRoutes);
+// Mount them separately to ensure they don't conflict
 app.use(bodyParser.json());
-app.use('/admin', adminRoutes, newEventRoutes);
+
+
 // app.use('/events', newEventRoutes)
 
 app.listen(PORT, ()=>{

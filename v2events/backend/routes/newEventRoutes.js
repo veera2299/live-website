@@ -72,7 +72,7 @@ router.get('/uploads/:imageName', (req, res) => {
 
 // UPDATE ROUTE
 // We use 'upload.array' to allow adding new files
-router.put(
+router.post(
     '/update-event/:id', 
     verifyToken, 
     upload.array('images', 10), // Allow up to 10 new images

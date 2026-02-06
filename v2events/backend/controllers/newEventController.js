@@ -9,7 +9,8 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // Files will be saved in the 'uploads' directory
         // IMPORTANT: You must manually create a folder named 'uploads' in your project root
-        cb(null, './uploads');
+        // cb(null, './uploads');
+        cb(null, path.join(__dirname, '../uploads'));
     },
     filename: function (req, file, cb) {
         // Generate a unique filename: fieldname + timestamp + extension
@@ -41,6 +42,7 @@ const upload = multer({
 const addEvent = async (req, res) => {
     try {
         const { eventName, names, ytCode, date, time, location, timeline } = req.body;
+
 
         // CHANGE 1: Use 'req.files' (plural) instead of 'req.file'
         // We map over the array to get just the filenames
@@ -158,6 +160,7 @@ const updateEvent = async (req, res) => {
         // Destructure text fields. Note: 'timeline' and 'imagesToDelete' come as strings in FormData
         let { eventName, names, ytCode, date, time, location, timeline, imagesToDelete } = req.body;
 
+        console.log("Body received:", req.body);
         // --- 1. PARSE COMPLEX DATA (FormData sends arrays/objects as Strings) ---
         
         // Parse Timeline

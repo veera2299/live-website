@@ -141,10 +141,11 @@ const Addevent = () => {
 
     try {
       let response;
-      const config = { headers: { token } }; // FormData headers handled auto by axios
+      const config = { headers: { token } };
 
       if (id) {
-        response = await axios.put(`${url}/update-event/${id}`, formData, config);
+        // FIXED: Switched to POST to ensure images upload correctly
+        response = await axios.post(`${url}/update-event/${id}`, formData, config);
       } else {
         response = await axios.post(`${url}/add-event`, formData, config);
       }
