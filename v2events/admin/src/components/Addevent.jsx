@@ -145,7 +145,7 @@ const Addevent = () => {
 
       if (id) {
         // FIXED: Switched to POST to ensure images upload correctly
-        response = await axios.post(`${url}/update-event/${id}`, formData, config);
+        response = await axios.put(`${url}/update-event/${id}`, formData, config);
       } else {
         response = await axios.post(`${url}/add-event`, formData, config);
       }
@@ -153,7 +153,7 @@ const Addevent = () => {
       if (response.data.success) {
         alert(id ? "Event Updated Successfully" : "New Event Added Successfully");
         if (!id) resetForm();
-        else navigate('/admin/modify-events'); 
+        else navigate('/admin/modify_events'); 
       } else {
           alert(response.data.message || "Operation failed");
       }
@@ -217,7 +217,7 @@ const Addevent = () => {
                               <button
                                 type="button"
                                 onClick={() => removeOldImage(imgName)}
-                                className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 shadow hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 shadow hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                               >
                                 <Trash2 size={12} />
                               </button>
@@ -340,8 +340,8 @@ const Addevent = () => {
         <div className="flex items-center justify-end border-t border-gray-100 pt-6">
            <button 
              type="button" 
-             className="mr-4 px-6 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-             onClick={() => id ? navigate('/admin/modify-events') : resetForm()}
+             className="mr-4 px-6 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+             onClick={() => id ? navigate('/admin/modify_events') : resetForm()}
            >
              Cancel
            </button>
@@ -349,7 +349,7 @@ const Addevent = () => {
            <button 
              type="submit" 
              disabled={loading}
-             className="flex items-center px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition shadow-sm disabled:bg-indigo-300"
+             className="flex items-center px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition shadow-sm disabled:bg-indigo-300 cursor-pointer"
            >
              <Save className="w-4 h-4 mr-2" />
              {loading ? "Saving..." : (id ? "Update Event" : "Publish Event")}

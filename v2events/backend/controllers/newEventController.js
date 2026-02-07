@@ -3,6 +3,7 @@ const Admin = require("../models/Admin")
 const multer = require("multer")
 const path = require('path');
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 
 // --- Multer Storage Configuration ---
 const storage = multer.diskStorage({
@@ -154,94 +155,192 @@ const deleteEvent = async(req, res)=>{
 };
 
 
+// const updateEvent = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         let { eventName, names, ytCode, date, time, location, timeline, imagesToDelete } = req.body;
+
+//         // --- 1. PARSE COMPLEX DATA ---
+//         let formattedTimeline = undefined;
+//         if (timeline) {
+//             try {
+//                 formattedTimeline = typeof timeline === 'string' ? JSON.parse(timeline) : timeline;
+//             } catch (e) {
+//                 return res.status(400).json({ message: "Invalid timeline format" });
+//             }
+//         }
+
+//         let imagesToRemove = [];
+//         if (imagesToDelete) {
+//             try {
+//                 imagesToRemove = typeof imagesToDelete === 'string' ? JSON.parse(imagesToDelete) : imagesToDelete;
+//             } catch (e) {
+//                 return res.status(400).json({ message: "Invalid imagesToDelete format" });
+//             }
+//         }
+
+//         // --- 2. HANDLE FILE SYSTEM DELETION ---
+//         if (imagesToRemove.length > 0) {
+//             imagesToRemove.forEach(filename => {
+//                 const filePath = path.join(__dirname, '../uploads', filename);
+//                 fs.unlink(filePath, (err) => {
+//                     if (err && err.code !== 'ENOENT') console.error(`Failed to delete file: ${filename}`, err);
+//                 });
+//             });
+//         }
+
+//         // --- 3. PROCESS NEW IMAGES ---
+//         let newImageFilenames = [];
+//         if (req.files && req.files.length > 0) {
+//             newImageFilenames = req.files.map(file => file.filename);
+//         }
+
+//         // =========================================================
+//         // FIX START: Handling MongoDB Updates safely
+//         // =========================================================
+
+//         // STEP A: Perform Deletions First ($pull)
+//         // We do this separately to avoid conflict with $push on the same field
+//         if (imagesToRemove.length > 0) {
+//             await NewEvent.findByIdAndUpdate(id, {
+//                 $pull: { eventImages: { $in: imagesToRemove } }
+//             });
+//         }
+
+//         // STEP B: Prepare the Main Update ($set and $push)
+//         const updateQuery = {
+//             $set: {
+//                 eventName,
+//                 names,
+//                 ytCode,
+//                 date,
+//                 time,
+//                 location
+//             }
+//         };
+
+//         // Add timeline to $set if it exists
+//         if (formattedTimeline) {
+//             updateQuery.$set.timeline = formattedTimeline;
+//         }
+
+//         // Add new images via $push
+//         if (newImageFilenames.length > 0) {
+//             updateQuery.$push = { eventImages: { $each: newImageFilenames } };
+//         }
+
+//         // STEP C: Execute the Final Update
+//         const updatedEvent = await NewEvent.findByIdAndUpdate(
+//             id,
+//             updateQuery,
+//             { new: true } // This returns the final version of the doc
+//         );
+
+//         if (!updatedEvent) {
+//             return res.status(404).json({ message: "Event not found" });
+//         }
+
+//         return res.status(200).json({
+//             message: "Event updated successfully",
+//             event: updatedEvent,
+//             success: true // changed "true" string to boolean true
+//         });
+
+//     } catch (error) {
+//         console.error("Update Error:", error);
+//         return res.status(500).json({ error: "Internal server error" });
+//     }
+// };
+
+
 const updateEvent = async (req, res) => {
     try {
         const { id } = req.params;
-        // Destructure text fields. Note: 'timeline' and 'imagesToDelete' come as strings in FormData
         let { eventName, names, ytCode, date, time, location, timeline, imagesToDelete } = req.body;
 
-        console.log("Body received:", req.body);
-        // --- 1. PARSE COMPLEX DATA (FormData sends arrays/objects as Strings) ---
-        
-        // Parse Timeline
-        let formattedTimeline = undefined;
-        if (timeline) {
-            try {
-                formattedTimeline = typeof timeline === 'string' ? JSON.parse(timeline) : timeline;
-            } catch (e) {
-                return res.status(400).json({ message: "Invalid timeline format" });
-            }
+        // --- 1. Get Existing Event First ---
+        const event = await NewEvent.findById(id);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
         }
 
-        // Parse Images To Delete (Should be an array of filenames)
-        let imagesToRemove = [];
+        // --- 2. Create a Copy of Current Images ---
+        let finalImages = [...event.eventImages];
+
+        // --- 3. Handle Deletions (Async & Safe) ---
         if (imagesToDelete) {
             try {
-                imagesToRemove = typeof imagesToDelete === 'string' ? JSON.parse(imagesToDelete) : imagesToDelete;
-            } catch (e) {
+                const deleteArray = typeof imagesToDelete === "string" 
+                    ? JSON.parse(imagesToDelete) 
+                    : imagesToDelete;
+
+                // Create an array of delete promises (Don't pause server)
+                const deletePromises = deleteArray.map(async (filename) => {
+                    // Use robust path finding (Adjust '../uploads' if needed)
+                    const filePath = path.join(__dirname, '../uploads', filename);
+
+                    // Remove from our list immediately
+                    finalImages = finalImages.filter(img => img !== filename);
+
+                    // Delete file from disk
+                    if (fs.existsSync(filePath)) {
+                        await fsPromises.unlink(filePath).catch(err => 
+                            console.error(`Failed to delete ${filename}:`, err)
+                        );
+                    }
+                });
+
+                // Wait for all deletions to finish
+                await Promise.all(deletePromises);
+
+            } catch (err) {
+                console.error("Delete parsing error:", err);
                 return res.status(400).json({ message: "Invalid imagesToDelete format" });
             }
         }
 
-        // --- 2. HANDLE FILE SYSTEM DELETION ---
-        // If there are images to remove, delete them from the 'uploads' folder
-        if (imagesToRemove.length > 0) {
-            imagesToRemove.forEach(filename => {
-                const filePath = path.join(__dirname, '../uploads', filename); // Adjust '../uploads' to your actual folder path
-                fs.unlink(filePath, (err) => {
-                    if (err && err.code !== 'ENOENT') console.error(`Failed to delete file: ${filename}`, err);
-                });
-            });
-        }
-
-        // --- 3. PROCESS NEW IMAGES ---
-        let newImageFilenames = [];
+        // --- 4. Add New Images ---
         if (req.files && req.files.length > 0) {
-            newImageFilenames = req.files.map(file => file.filename);
+            const newImageFilenames = req.files.map(file => file.filename);
+            finalImages = [...finalImages, ...newImageFilenames];
         }
 
-        // --- 4. BUILD MONGO UPDATE QUERY ---
-        const updateQuery = {
-            $set: {
-                eventName,
-                names,
-                ytCode,
-                date,
-                time,
-                location
+        // --- 5. Prepare Update Data ---
+        // Parse timeline safely
+        let formattedTimeline = undefined;
+        if (timeline) {
+            try {
+                formattedTimeline = typeof timeline === "string" ? JSON.parse(timeline) : timeline;
+            } catch {
+                return res.status(400).json({ message: "Invalid timeline format" });
             }
+        }
+
+        const updateData = {
+            eventName,
+            names,
+            ytCode,
+            date,
+            time,
+            location,
+            eventImages: finalImages // The computed "Final" array
         };
 
-        // Only update timeline if it was sent
-        if (formattedTimeline) {
-            updateQuery.$set.timeline = formattedTimeline;
+        if (formattedTimeline !== undefined) {
+            updateData.timeline = formattedTimeline;
         }
 
-        // Logic A: Remove images ($pull)
-        if (imagesToRemove.length > 0) {
-            updateQuery.$pull = { eventImages: { $in: imagesToRemove } };
-        }
-
-        // Logic B: Add images ($push)
-        if (newImageFilenames.length > 0) {
-            updateQuery.$push = { eventImages: { $each: newImageFilenames } };
-        }
-
-        // --- 5. EXECUTE UPDATE ---
+        // --- 6. Save with $set ---
         const updatedEvent = await NewEvent.findByIdAndUpdate(
             id,
-            updateQuery,
-            { new: true } // Return updated doc
+            { $set: updateData },
+            { new: true }
         );
 
-        if (!updatedEvent) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-
         return res.status(200).json({
+            success: true,
             message: "Event updated successfully",
-            event: updatedEvent,
-            success: "true"
+            event: updatedEvent
         });
 
     } catch (error) {
@@ -251,8 +350,14 @@ const updateEvent = async (req, res) => {
 };
 
 
+
+
+
+
 // CHANGE 3: Use 'upload.array' instead of 'upload.single'
 // 'images' is the key name you must use in Postman
 // 10 is the maximum number of files allowed at once
 
-module.exports = { addEvent: [upload.array('images', 10), addEvent], getAllEvents, getEvent, deleteEvent, updateEvent: [upload.array('images', 10), updateEvent] };
+module.exports = { addEvent: [upload.array('images', 10), addEvent], getAllEvents, getEvent, deleteEvent, updateEvent};
+
+// updateEvent: [upload.array('images', 10), updateEvent]

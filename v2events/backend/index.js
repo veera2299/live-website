@@ -15,22 +15,24 @@ dotEnv.config();
 //access frontend
 app.use(cors());
 
+// ✅ USE NATIVE EXPRESS PARSERS (Replaces body-parser)
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 mongoose.connect(process.env.MONGO_URI).then(()=>console.log("DB connected successfully"))
 .catch((err)=>console.log(err)
 )
 
 
 // Add this in your main server file (server.js/index.js)
-// This makes the 'uploads' folder publicly accessible at http://localhost:5000/uploads/filename.jpg
+// This makes the 'uploads' folder publicly accessible at http://localhost:4000/uploads/filename.jpg
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use('/admin', adminRoutes);
 app.use('/admin', newEventRoutes);
 // Mount them separately to ensure they don't conflict
-app.use(bodyParser.json());
 
-
-// app.use('/events', newEventRoutes)
 
 app.listen(PORT, ()=>{
     console.log(`server started and running at ${PORT}`);
