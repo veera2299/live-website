@@ -3,10 +3,10 @@ const app = express();
 const dotEnv = require('dotenv')
 const mongoose = require('mongoose')
 const adminRoutes = require('./routes/adminRoutes')
-const bodyParser = require('body-parser')
 const newEventRoutes = require("./routes/newEventRoutes")
 const path = require('path');
 const cors = require('cors');
+const guestRoutes = require('./routes/guestRoutes');
 
 const PORT = 4000;
 
@@ -31,6 +31,7 @@ mongoose.connect(process.env.MONGO_URI).then(()=>console.log("DB connected succe
 
 app.use('/admin', adminRoutes);
 app.use('/admin', newEventRoutes);
+app.use('/admin', guestRoutes)
 // Mount them separately to ensure they don't conflict
 
 

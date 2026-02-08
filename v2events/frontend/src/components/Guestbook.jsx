@@ -1,127 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom'; // Import if getting ID from URL
 
-// Sample initial data
-const initialMessages = [
-  { id: 1, name: "V2 Events", message: "Wishing you both a lifetime of love and happiness!", date: "Just now" },
-  { id: 2, name: "Mike & Jenny", message: "Congratulations!! The ceremony looks beautiful.", date: "2 mins ago" },
-  { id: 3, name: "The Thompson Family", message: "Cheers to the happy couple! 🥂", date: "5 mins ago" },
-];
+// Accept eventId as a prop (or get from URL)
+const Guestbook = ({ eventId }) => { 
+  
+  // FALLBACK: If eventId isn't passed as a prop, try getting it from the URL
+  // const params = useParams();
+  // const activeEventId = eventId || params.id; 
+  // For now, let's assume you pass it as a prop <Guestbook eventId={id} />
 
-const Guestbook = () => {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([]);
   const [formData, setFormData] = useState({ name: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const API_BASE_URL = "http://localhost:4000/admin";
+
+  // --- FETCH MESSAGES FOR THIS SPECIFIC EVENT ---
+  const fetchMessages = async () => {
+    if (!eventId) return; // Don't fetch if no ID
+
+    try {
+      // Changed URL to include eventId
+      const response = await axios.get(`${API_BASE_URL}/messages/${eventId}`);
+      if (response.data && response.data.messages) {
+        setMessages(response.data.messages);
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchMessages();
+  }, [eventId]); // Refetch if eventId changes
+
+  // --- SUBMIT MESSAGE ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.message) return;
 
     setIsSubmitting(true);
 
-    // Simulate network delay for effect
-    setTimeout(() => {
-      const newMessage = {
-        id: Date.now(),
+    try {
+      await axios.post(`${API_BASE_URL}/add-message`, {
         name: formData.name,
         message: formData.message,
-        date: "Just now"
-      };
+        eventId: eventId // <--- SEND THE LINK HERE
+      });
 
-      setMessages([newMessage, ...messages]);
       setFormData({ name: '', message: '' });
+      fetchMessages(); 
+      alert("Message sent successfully!");
+
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert("Failed to send message.");
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
+  };
+  
+  // ... (Rest of your JSX, format Date helper, etc. remains the same) ...
+  
+  // Helper to format Date
+  const formatDate = (dateString) => {
+    if (!dateString) return "Just now";
+    return new Date(dateString).toLocaleDateString("en-US", { 
+        month: 'short', day: 'numeric', year: 'numeric' 
+    });
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
     <div className="py-16 bg-gradient-to-b from-gray-900 to-gray-800 text-white font-sans m-4 md:m-8 rounded-2xl overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl">
-        
-        {/* Header */}
+        {/* ... Header ... */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-['Playfair_Display'] tracking-wider mb-4">
-            Guestbook
+             Guestbook
           </h2>
-          <p className="text-gray-400 font-light text-lg">
-            Leave a note for the couple to read later.
-          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12">
-          
-          {/* 1. INPUT FORM (Sticky on Desktop) */}
+          {/* Form Section */}
           <div className="lg:w-1/3">
-            <div className="sticky top-8">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
-                <h3 className="text-2xl font-['Playfair_Display'] mb-6 text-pink-200">
-                  Write a Wish
-                </h3>
-                
+             <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
+                   {/* Inputs for Name and Message */}
+                   <div>
                     <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Your Name</label>
-                    <input 
-                      type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="e.g. Uncle Bob"
-                      className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500/50 transition-colors"
-                    />
-                  </div>
-                  
-                  <div>
+                    <input type="text" name="name" required value={formData.name} onChange={handleChange} className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500/50 transition-colors" />
+                   </div>
+                   <div>
                     <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Message</label>
-                    <textarea 
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      rows="4"
-                      placeholder="Share your love..."
-                      className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500/50 transition-colors resize-none"
-                    ></textarea>
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-medium py-3 rounded-lg shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Sending...' : 'Send Love'}
-                  </button>
+                    <textarea name="message" required value={formData.message} onChange={handleChange} rows="4" className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-pink-500/50 transition-colors resize-none"></textarea>
+                   </div>
+                   <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white py-3 rounded-lg">
+                     {isSubmitting ? 'Sending...' : 'Send Love'}
+                   </button>
                 </form>
-              </div>
-            </div>
+             </div>
           </div>
 
-          {/* 2. MESSAGES GRID */}
+          {/* Messages List Section */}
           <div className="lg:w-2/3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {messages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className="bg-white/5 backdrop-blur-sm border border-white/5 p-6 rounded-xl hover:bg-white/10 transition-colors duration-300"
-                >
-                  <p className="text-gray-300 italic mb-6 leading-relaxed">
-                    "{msg.message}"
-                  </p>
-                  <div className="flex justify-between items-end border-t border-white/10 pt-4">
-                    <div>
-                      <h4 className="font-['Playfair_Display'] text-lg text-pink-100">
-                        {msg.name}
-                      </h4>
-                    </div>
-                    <span className="text-xs text-gray-500">{msg.date}</span>
-                  </div>
+            {messages.length === 0 ? (
+                <div className="text-center text-gray-500 py-10 italic">
+                    No messages yet for this event.
                 </div>
-              ))}
-            </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {messages.map((msg) => (
+                    <div key={msg._id} className="bg-white/5 backdrop-blur-sm border border-white/5 p-6 rounded-xl">
+                       <p className="text-gray-300 italic mb-6">"{msg.message}"</p>
+                       <div className="flex justify-between items-end border-t border-white/10 pt-4">
+                          <h4 className="font-['Playfair_Display'] text-lg text-pink-100">{msg.name}</h4>
+                          <span className="text-xs text-gray-500">{formatDate(msg.displayDate)}</span>
+                       </div>
+                    </div>
+                ))}
+                </div>
+            )}
           </div>
-
         </div>
       </div>
     </div>
