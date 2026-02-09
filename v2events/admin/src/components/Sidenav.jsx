@@ -50,7 +50,8 @@ const Sidenav = ({ onClose }) => {
         </button>
       </div>
 
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-hide font-medium">
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto font-medium 
+  [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         
         {/* 3. Logic: Compare location.pathname with the link's path */}
         
@@ -76,6 +77,15 @@ const Sidenav = ({ onClose }) => {
         >
           <Edit size={20} />
           <span>Modify events</span>
+        </Link>
+
+         {/* Guest Book */}
+         <Link 
+          to="/admin/guestbook" 
+          className={getLinkClasses(location.pathname === '/admin/guestbook')}
+        >
+          <Edit size={20} />
+          <span>Guest Book Messages</span>
         </Link>
 
         {/* All Events */}

@@ -44,4 +44,21 @@ router.get('/messages/:eventId', async (req, res) => {
     }
 });
 
+// 3. DELETE: Remove a specific message by ID
+router.delete('/message/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedMessage = await GuestMessage.findByIdAndDelete(id);
+
+        if (!deletedMessage) {
+            return res.status(404).json({ error: "Message not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Guest message deleted successfully" });
+    } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
 module.exports = router;
