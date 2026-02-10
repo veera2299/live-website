@@ -5,7 +5,7 @@ import axios from 'axios';
 // Pages
 import New_event from './pages/New_event';
 import Dashboard from './pages/Dashboard';
-import Modify_events from './pages/modify_events';
+import Modify_events from './pages/Modify_events';
 import Events from './pages/Events';
 import Settings from './pages/Settings';
 import AdminGuestBook from './pages/AdminGuestBook';
@@ -150,7 +150,7 @@ function App() {
               </ProtectedRoute>
             } />
 
-            <Route path='/admin/all-events/:eventId' element={
+            <Route path='/admin/modify_events/:eventId' element={
               <ProtectedRoute isLoggedIn={isLoggedIn} onOpenLogin={openLogin}>
                 <Addevent />
               </ProtectedRoute>
