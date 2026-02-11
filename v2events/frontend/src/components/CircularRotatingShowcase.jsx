@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useEvent } from '../contextApi/EventContext';
 
+import { getCloudinaryUrl } from '../utils/imageHelper';
+
 // 1. Update component to accept props
 const CircularRotatingShowcase = ({ eventData: propEventData }) => {
   const { homeEvent, loading: contextLoading } = useEvent();
@@ -56,9 +58,9 @@ const CircularRotatingShowcase = ({ eventData: propEventData }) => {
   if (isLoading) return <div className="h-screen flex items-center justify-center text-white bg-[#1e1b4b]">Loading Visuals...</div>;
 
   // Image Logic
-  const IMAGE_BASE_URL = "http://localhost:4000/admin/uploads/"; // Ensure this path matches your backend
+
   const displayImages = (eventData.eventImages && eventData.eventImages.length > 0)
-    ? eventData.eventImages.map(img => `${IMAGE_BASE_URL}${img}`)
+    ? eventData.eventImages.map(img => getCloudinaryUrl(img))
     : ["https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop"]; 
 
   // Dynamic Color Logic (Default to white)

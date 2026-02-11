@@ -1,11 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // Ensure you have this if using Link, otherwise use button as before
+import { Link } from 'react-router-dom'; 
+import { getCloudinaryUrl } from '../utils/imageHelper';
 
 // 1. Accept props: title, events data, and the 'isCompleted' flag
 const EventList = ({ title, events, isCompleted }) => {
-  
-  // Helper to handle image URLs from your backend
-  const IMAGE_BASE_URL = "http://localhost:4000/uploads/";
 
   return (
     <div className="min-h-screen bg-stone-300 flex items-center justify-center font-sans py-10">
@@ -30,7 +28,7 @@ const EventList = ({ title, events, isCompleted }) => {
           {events.map((event) => {
             // Construct Image URL
             const displayImage = event.eventImages && event.eventImages.length > 0 
-                ? `${IMAGE_BASE_URL}${event.eventImages[0]}`
+                ? getCloudinaryUrl(event.eventImages[0])
                 : "https://via.placeholder.com/800"; // Fallback
 
             return (

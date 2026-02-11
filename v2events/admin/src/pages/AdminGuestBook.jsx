@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Calendar, MapPin, ArrowRight } from 'lucide-react';
 
+import { getCloudinaryUrl } from '../utils/imageHelper';
+
 const AdminGuestBook = () => {
     const [events, setEvents] = useState([]);
     const navigate = useNavigate();
@@ -36,7 +38,7 @@ const AdminGuestBook = () => {
                         <div className="h-40 bg-gray-100 relative">
                              {event.eventImages && event.eventImages.length > 0 ? (
                                 <img 
-                                    src={`http://localhost:4000/admin/uploads/${event.eventImages[0]}`} 
+                                    src={getCloudinaryUrl(event.eventImages?.[0])} 
                                     alt={event.eventName} 
                                     className="w-full h-full object-cover"
                                 />

@@ -259,6 +259,8 @@ import { Edit, Trash2, MapPin, Calendar, Clock, Search, Youtube, Users, ChevronL
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+import { getCloudinaryUrl } from '../utils/imageHelper';
+
 // Import css files for the slider
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -271,23 +273,9 @@ const Modify_events = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // API Config (KEPT EXACTLY AS YOURS)
+  // API Config 
   const API_URL = "http://localhost:4000/admin";
   
-  // --- CLOUDINARY CONFIG ---
-  const CLOUD_NAME = "dkv0sv3n9"; // <--- REPLACE THIS WITH YOUR CLOUD NAME
-
-  // Helper to generate Cloudinary URL
-  const getCloudinaryUrl = (publicId) => {
-    if (!publicId) return "https://via.placeholder.com/400x200?text=No+Image";
-    
-    // Legacy check: If your DB still has some http links, return them as is
-    if (publicId.startsWith("http")) return publicId;
-
-    // Construct Cloudinary URL (Quality Auto, Format Auto)
-    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${publicId}`;
-  };
-
   // 1. Fetch Data
   useEffect(() => {
     const fetchEvents = async () => {

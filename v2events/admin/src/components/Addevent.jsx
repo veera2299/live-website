@@ -370,25 +370,15 @@ import { Calendar, Clock, MapPin, Upload, X, Save, ArrowLeft, Trash2, Plus } fro
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+import { getCloudinaryUrl } from '../utils/imageHelper';
+
 const Addevent = () => {
   const { eventId } = useParams();
   const id = eventId;
   const navigate = useNavigate();
   const url = "http://localhost:4000/admin";
 
-  // --- CLOUDINARY CONFIG ---
-  // Replace with your actual Cloud Name
-  const CLOUD_NAME = "dkv0sv3n9"; 
 
-  // Helper to build Cloudinary URL from Public ID
-  const getCloudinaryUrl = (publicId) => {
-    if (!publicId) return "";
-    // Check if it's already a full URL (legacy support)
-    if (publicId.startsWith("http")) return publicId;
-    
-    // Construct URL: Folder/Image -> Optimized URL
-    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${publicId}`;
-  };
 
   // --- State Management ---
   const [files, setFiles] = useState([]); 
