@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useEvent } from '../contextApi/EventContext';
 
 import { getCloudinaryUrl } from '../utils/imageHelper';
+import { LoveEffect, BirthdayEffect } from './effects/EventEffects';
+
 
 // 1. Update component to accept props
 const CircularRotatingShowcase = ({ eventData: propEventData }) => {
@@ -65,6 +67,118 @@ const CircularRotatingShowcase = ({ eventData: propEventData }) => {
 
   // Dynamic Color Logic (Default to white)
   const textColor = eventData.textColor || 'white'; 
+
+
+
+// --- HELPER 1: CHOOSE BACKGROUND EFFECT ---
+const getEventTheme = (name) => {
+  if (!name) return null;
+  const lowerName = name.toLowerCase();
+  
+  if (lowerName.includes('marriage') || lowerName.includes('wedding') || lowerName.includes('reception') || lowerName.includes('engagement')) {
+    return <LoveEffect />;
+  }
+  
+  if (lowerName.includes('birthday') || lowerName.includes('party') || lowerName.includes('born')) {
+    return <BirthdayEffect />;
+  }
+  return null;
+};
+
+// --- HELPER 2: FORMAT TEXT CONTENT ---
+const renderCentralContent = () => {
+  const eventType = (eventData.eventName || "").toLowerCase();
+  const rawNames = eventData.names || "V2 Events";
+
+  // Split names by common separators. Result ex: ["Ram", "&", "Sita"]
+  const splitArr = rawNames.split(/(\s+&\s+|\s+and\s+|\s+weds\s+|\s+\+\s+)/i);
+  const name1 = splitArr[0] || rawNames;
+  const name2 = splitArr[2] || ""; // Index 2 because Index 1 is the separator
+
+  // 1. MARRIAGE (Name weds Name)
+  if (eventType.includes('marriage') || eventType.includes('wedding')) {
+    return (
+      <div className="flex flex-col items-center leading-none">
+        <h1 className="font-['Great_Vibes'] text-[12vw] lg:text-[8vw] drop-shadow-md text-pink-100">
+          {name1}
+        </h1>
+        <span className="font-['Playfair_Display'] text-xl md:text-3xl italic text-rose-300 my-2 tracking-[0.3em] opacity-90 uppercase">
+          — weds —
+        </span>
+        <h1 className="font-['Great_Vibes'] text-[12vw] lg:text-[8vw] drop-shadow-md text-pink-100">
+          {name2 || "Partner"}
+        </h1>
+      </div>
+    );
+  }
+
+  // 2. RECEPTION / ENGAGEMENT (Name & Name)
+  if (eventType.includes('reception') || eventType.includes('engagement')) {
+    return (
+      <div className="flex flex-col items-center leading-none">
+        <h1 className="font-['Great_Vibes'] text-[12vw] lg:text-[8vw] drop-shadow-md">
+          {name1}
+        </h1>
+        <span className="font-['Playfair_Display'] text-4xl md:text-6xl text-yellow-300 my-1 font-bold opacity-80">
+          &amp;
+        </span>
+        <h1 className="font-['Great_Vibes'] text-[12vw] lg:text-[8vw] drop-shadow-md">
+          {name2}
+        </h1>
+      </div>
+    );
+  }
+
+  // 3. BIRTHDAY (Happy Birthday Name)
+  if (eventType.includes('birthday')) {
+    return (
+      <div className="flex flex-col items-center leading-none">
+        <span className="font-['Playfair_Display'] text-lg md:text-2xl tracking-[0.2em] uppercase text-yellow-200 mb-2">
+          Happy Birthday
+        </span>
+        <h1 className="font-['Great_Vibes'] text-[14vw] lg:text-[10vw] drop-shadow-lg text-white">
+          {rawNames}
+        </h1>
+        <span className="text-4xl mt-2 animate-bounce">🎂</span>
+      </div>
+    );
+  }
+
+  // 4. HALF SAREE / CEREMONIES
+  if (eventType.includes('half saree') || eventType.includes('saree') || eventType.includes('dhoti')) {
+    return (
+      <div className="flex flex-col items-center leading-none">
+        <span className="font-['Playfair_Display'] text-sm md:text-xl tracking-widest text-pink-200 mb-2 italic">
+          Chi. La. Sow.
+        </span>
+        <h1 className="font-['Great_Vibes'] text-[13vw] lg:text-[9vw] drop-shadow-md text-white">
+          {rawNames}
+        </h1>
+        <span className="font-['Playfair_Display'] text-xs md:text-lg tracking-[0.3em] uppercase text-pink-200 mt-2 border-t border-pink-200/50 pt-2">
+          Ceremony
+        </span>
+      </div>
+    );
+  }
+
+  // 5. DEFAULT (Just the Name)
+  return (
+    <div className="text-center">
+      <h1 className="font-['Great_Vibes'] text-[15vw] lg:text-[10vw] leading-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] tracking-wide">
+         {rawNames}
+      </h1>
+      {/* Optional: Add subtitle for Political/Other events */}
+      {(eventType.includes('political') || eventType.includes('meeting')) && (
+         <p className="font-['Playfair_Display'] text-lg tracking-widest text-orange-400 mt-2 uppercase">
+            Grand Welcome
+         </p>
+      )}
+    </div>
+  );
+};
+
+
+
 
   return (
     <div className="relative overflow-hidden bg-[#D2D2D2] rounded-2xl m-4 md:m-8 h-[calc(100vh-1.5rem)] md:h-[calc(100vh-3rem)]">
@@ -172,19 +286,24 @@ const CircularRotatingShowcase = ({ eventData: propEventData }) => {
         )}
       </div>
 
+
+
+
       {/* 3. CENTERED TEXT (DYNAMIC) */}
-      <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none py-24">
-        <div className="relative text-center mt-20 md:mt-0" style={{ color: textColor }}> 
-            {/* Display Actual Event Names */}
-            <h1 className="font-['Great_Vibes'] text-[15vw] lg:text-[10vw] leading-none drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)] tracking-wide">
-                {eventData.names || "V2 Events"}
-            </h1>
-            {/* Display Actual Event Type */}
-            <p className="font-['Playfair_Display'] opacity-90 text-lg md:text-2xl mt-4 tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                {eventData.eventName || "Making Memories"}
-            </p>
-        </div>
-      </div>
+<div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none py-24">
+{/* Keep 'mt-20' for mobile (so it stays up). Change 'md:mt-0' to 'md:mt-32' for desktop only. */}
+<div className="relative text-center mt-20 md:mt-32 group" style={{ color: textColor }}>
+      
+      {/* 1. CALL THE BACKGROUND EFFECT */}
+      {getEventTheme(eventData.eventName)}
+      
+      {/* 2. CALL THE TEXT FORMATTER */}
+      {renderCentralContent()}
+      
+  </div>
+</div>
+
+
 
       {/* 4. 3D SLIDER SECTION */}
       <div 
