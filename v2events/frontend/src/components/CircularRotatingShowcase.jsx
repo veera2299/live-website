@@ -206,7 +206,7 @@ const renderCentralContent = () => {
 
       {/* 1. BACKGROUND IMAGE */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center z-0 pointer-events-none transition-all duration-1000"
+        className="absolute inset-0 w-full h-full bg-cover bg-center z-0 pointer-events-none transition-all duration-1000 rounded-2xl"
         style={{ backgroundImage: `url("${displayImages[0]}")` }} 
       >
         <div className="absolute inset-0 bg-black/50 bg-gradient-to-b from-black/30 via-black/40 to-black/70 backdrop-blur-[2px]"></div>

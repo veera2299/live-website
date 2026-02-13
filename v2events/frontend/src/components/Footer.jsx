@@ -1,38 +1,64 @@
 import React from 'react';
-import v2_logo from "../../src/assets/v2_logo.png"; // Using one of your assets as a bg (optional)
+import v2_logo from "../../src/assets/v2_logo_2.png"; 
+// 1. Import real icons
+import { Facebook, Instagram, Twitter, Linkedin, MapPin, Phone, Mail } from 'lucide-react';
 
 const Footer = () => {
   return (
     <footer className="bg-gray-100 dark:bg-gray-950 text-gray-700 dark:text-gray-200 mt-20 relative overflow-hidden">
         
-        {/* Optional: Top Decoration Line (Gold) */}
-        <div className="w-full h-1 bg-linear-to-r from-transparent via-[#fdc62e] to-transparent opacity-70"></div>
+        {/* Decoration Line (Gold) */}
+        <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#fdc62e] to-transparent opacity-70"></div>
 
         <div className="container mx-auto px-6 py-16">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                 
-                {/* 1. Brand Section */}
-                <div className="space-y-4">
-                    <h1 className="text-3xl font-serif font-bold flex items-center gap-2 text-gray-900 dark:text-white">
-                         <img className='size-12' src={v2_logo} alt="" /> Events
-                    </h1>
-                    <p className="text-sm opacity-80 leading-relaxed">
+                {/* 1. BRAND SECTION (Matched to Navbar) */}
+                <div className="space-y-6">
+                    {/* Logo & Text Block */}
+                    <a href="/#" className='group flex items-center gap-3 w-fit'>
+                        {/* Fixed: Logo height/weight matches Navbar */}
+                        <img 
+                            className='w-10 md:w-12 drop-shadow-sm transition-transform duration-300 group-hover:scale-105' 
+                            src={v2_logo} 
+                            alt="V2 Events Logo" 
+                        />
+                        <div className='flex flex-col leading-none justify-center'>
+                            <p className="font-['Playfair_Display'] text-2xl md:text-3xl font-bold tracking-wide text-gray-800 dark:text-gray-100 group-hover:text-[#fdc62e] transition-colors">
+                                V2 Events
+                            </p>
+                            <span className="text-[0.6rem] md:text-[0.7rem] tracking-[0.3em] text-gray-500 uppercase ml-0.5 group-hover:text-[#fdc62e]/80 transition-colors">
+                                Making Memories
+                            </span>
+                        </div>
+                    </a>
+
+                    <p className="text-sm opacity-80 leading-relaxed max-w-xs">
                         Making your special moments unforgettable. We specialize in weddings, corporate events, and grand celebrations.
                     </p>
-                    {/* Social Icons */}
-                    <div className="flex gap-4 mt-4">
-                        {['Facebook', 'Instagram', 'Twitter', 'LinkedIn'].map((social, idx) => (
-                            <a key={idx} href="#" className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center hover:scale-110 hover:bg-[#fdc62e] hover:text-white transition-all duration-300">
-                                {/* Simple SVG Placeholder for icons */}
-                                <span className="text-xs font-bold">{social[0]}</span> 
+
+                    {/* Social Icons (Replaced F I T L with real icons) */}
+                    <div className="flex gap-4">
+                        {[
+                            { icon: <Facebook size={18} />, href: "#" },
+                            { icon: <Instagram size={18} />, href: "#" },
+                            { icon: <Twitter size={18} />, href: "#" },
+                            { icon: <Linkedin size={18} />, href: "#" }
+                        ].map((social, idx) => (
+                            <a 
+                                key={idx} 
+                                href={social.href} 
+                                className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:scale-110 hover:bg-[#fdc62e] hover:text-white transition-all duration-300"
+                            >
+                                {social.icon}
                             </a>
                         ))}
                     </div>
                 </div>
 
-                {/* 2. Quick Links */}
+                {/* 2. QUICK LINKS */}
                 <div>
-                    <h2 className="text-lg font-bold mb-6 text-gray-900 dark:text-white">Quick Links</h2>
+                    <h2 className="text-lg font-bold mb-6 text-gray-900 dark:text-white font-['Playfair_Display'] tracking-wide">Quick Links</h2>
                     <ul className="space-y-3 text-sm">
                         {['Home', 'Upcoming Events', 'Completed Projects', 'Gallery', 'FAQ'].map((link) => (
                             <li key={link}>
@@ -44,40 +70,42 @@ const Footer = () => {
                     </ul>
                 </div>
 
-                {/* 3. Contact Info */}
+                {/* 3. CONTACT INFO */}
                 <div>
-                    <h2 className="text-lg font-bold mb-6 text-gray-900 dark:text-white">Contact Us</h2>
+                    <h2 className="text-lg font-bold mb-6 text-gray-900 dark:text-white font-['Playfair_Display'] tracking-wide">Contact Us</h2>
                     <ul className="space-y-4 text-sm">
+                        
+                        {/* Address */}
                         <li className="flex items-start gap-3">
-                            <span className="text-[#fdc62e] text-lg">📍</span>
-                            <span>{"kakinada(533005),"} <br/> andhra pradesh</span>
+                            <MapPin size={20} className="text-[#fdc62e] mt-0.5" />
+                            <span className="opacity-90">{"Kakinada (533005),"} <br/> Andhra Pradesh</span>
                         </li>
+
+                        {/* Phone - Click to Dial */}
                         <li className="flex items-center gap-3">
-                            <span className="text-[#fdc62e] text-lg">📞</span>
-                            <span>+91 9542303831</span>
+                            <Phone size={20} className="text-[#fdc62e]" />
+                            <a 
+                                href="tel:+919542303831" 
+                                className="hover:text-[#fdc62e] transition-colors duration-300 font-medium"
+                                title="Call Us"
+                            >
+                                +91 9542303831
+                            </a>
                         </li>
+
+                        {/* Email - Click to Send */}
                         <li className="flex items-center gap-3">
-                            <span className="text-[#fdc62e] text-lg">✉️</span>
-                            <span>v2liveevents@gmail.com</span>
+                            <Mail size={20} className="text-[#fdc62e]" />
+                            <a 
+                                href="mailto:v2liveevents@gmail.com" 
+                                className="hover:text-[#fdc62e] transition-colors duration-300 font-medium"
+                                title="Send Email"
+                            >
+                                v2liveevents@gmail.com
+                            </a>
                         </li>
                     </ul>
                 </div>
-
-                {/* 4. Newsletter */}
-                {/* <div>
-                    <h2 className="text-lg font-bold mb-6 text-gray-900 dark:text-white">Newsletter</h2>
-                    <p className="text-sm mb-4 opacity-80">Subscribe to get the latest updates and offers.</p>
-                    <div className="flex flex-col gap-3">
-                        <input 
-                            type="email" 
-                            placeholder="Enter your email" 
-                            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#fdc62e]"
-                        />
-                        <button className="bg-[#fdc62e] text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-500 transition-colors shadow-lg shadow-yellow-500/30">
-                            Subscribe
-                        </button>
-                    </div>
-                </div> */}
 
             </div>
             

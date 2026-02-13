@@ -6,7 +6,7 @@ import { getCloudinaryUrl } from '../utils/imageHelper';
 const EventList = ({ title, events, isCompleted }) => {
 
   return (
-    <div className="min-h-screen bg-stone-300 flex items-center justify-center font-sans py-10">
+    <div className="min-h-screen bg-stone-300 flex items-center justify-center font-sans py-10 rounded-xl">
       
       <div className="bg-white w-full shadow-2xl overflow-hidden p-8 md:p-12 min-h-[800px]">
         

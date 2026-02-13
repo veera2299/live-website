@@ -20,7 +20,7 @@ const EventLayout = ({ eventData }) => {
   
   // Whitelist: These events WILL show the guestbook. 
   // Everything else (Yoga Day, Political Meeting, etc.) will skip it.
-  const guestbookAllowedTypes = ["marriage", "wedding", "reception", "birthday", "engagement", "sangeet", "haldi"];
+  const guestbookAllowedTypes = ["marriage", "wedding", "reception", "birthday", "engagement", "sangeet", "haldi", "saree"];
   
   // Check if our eventType contains any of the allowed words
   const showGuestbook = guestbookAllowedTypes.some(type => eventType.includes(type));
